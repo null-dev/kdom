@@ -1,0 +1,4 @@
+rootProject.name = 'kdom'
+
+include 'web'
+include 'examples'
