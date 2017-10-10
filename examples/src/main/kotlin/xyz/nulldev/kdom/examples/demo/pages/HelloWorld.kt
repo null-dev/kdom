@@ -2,7 +2,8 @@ package xyz.nulldev.kdom.examples.demo.pages
 
 import xyz.nulldev.kdom.examples.demo.DemoPage
 
-class HelloWorld: DemoPage("Hello world!") {
+class HelloWorld:
+        DemoPage("Hello world!", "examples/src/main/kotlin/xyz/nulldev/kdom/examples/demo/pages/HelloWorld.kt") {
     private val title = field("World")
     private val button = htmlElement()
 

@@ -1,6 +1,9 @@
 # kdom
 *A fast, modular and boilerplate-free framework to build interactive web applications using Kotlin JS.*
 
+## Demos
+Simple demos on how to use *kdom* are available [here](http://static.nulldev.xyz/ci/kdom/src/main/resources/page.html). The demo page itself is written using kdom.
+
 ## Examples
 ```
 class Header : Component() {

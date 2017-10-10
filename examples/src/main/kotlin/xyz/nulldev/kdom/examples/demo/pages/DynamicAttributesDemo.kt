@@ -3,7 +3,8 @@ package xyz.nulldev.kdom.examples.demo.pages
 import xyz.nulldev.kdom.api.Component
 import xyz.nulldev.kdom.examples.demo.DemoPage
 
-class DynamicAttributesDemo: DemoPage("Dynamic attributes") {
+class DynamicAttributesDemo:
+        DemoPage("Dynamic attributes", "examples/src/main/kotlin/xyz/nulldev/kdom/examples/demo/pages/DynamicAttributesDemo.kt") {
     private val elevation = field(0)
     private val opacity = field(1f)
 
@@ -20,10 +21,6 @@ class DynamicAttributesDemo: DemoPage("Dynamic attributes") {
             </figure>
         </div>
         """.toDom()
-
-    override fun onCompile() {
-        console.log(this)
-    }
 
     fun slider(start: Int, end: Int, initial: Int = 0, onUpdate: (Int) -> Unit) = Component.from {
         val sliderElement = htmlElement()
@@ -56,6 +53,6 @@ class DynamicAttributesDemo: DemoPage("Dynamic attributes") {
                     <div class="mdc-slider__focus-ring"></div>
                 </div>
             </div>
-            """.toDom()
+""".toDom()
     }
 }

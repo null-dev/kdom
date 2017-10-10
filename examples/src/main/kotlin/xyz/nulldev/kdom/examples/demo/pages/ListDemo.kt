@@ -3,7 +3,8 @@ package xyz.nulldev.kdom.examples.demo.pages
 import xyz.nulldev.kdom.api.Component
 import xyz.nulldev.kdom.examples.demo.DemoPage
 
-class ListDemo: DemoPage("List demo") {
+class ListDemo:
+        DemoPage("List demo", "examples/src/main/kotlin/xyz/nulldev/kdom/examples/demo/pages/ListDemo.kt") {
     val listItems = componentList<ListItem>()
     val addButton = htmlElement()
 

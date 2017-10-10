@@ -3,7 +3,8 @@ package xyz.nulldev.kdom.examples.demo
 import xyz.nulldev.kdom.api.Component
 
 class DemoListPage(demoPages: List<() -> DemoPage>,
-                   private val parent: DemoRoot): DemoPage("Demo list") {
+                   private val parent: DemoRoot):
+        DemoPage("Demo list", "examples/src/main/kotlin/xyz/nulldev/kdom/examples/demo/DemoListPage.kt") {
     private val listItems = componentList(*demoPages.map {
         demoListItem(it)
     }.toTypedArray())
