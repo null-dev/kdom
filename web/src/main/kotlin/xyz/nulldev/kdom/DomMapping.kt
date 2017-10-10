@@ -20,6 +20,7 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
         override fun update() {
             node.parentNode!!.replaceChild(field.value.compiledDom.root, node)
             node = field.value.compiledDom.root
+            field.value.checkAttached()
         }
     }
     class ComponentListMapping(private val oldState: MutableList<Node>,
@@ -42,6 +43,10 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
             }
             //Save dummy node to state
             oldState.add(dummy)
+            //Fire onAttach listeners
+            list.forEach {
+                it.checkAttached()
+            }
         }
     }
     class AttributeMapping(private val attr: Attr,

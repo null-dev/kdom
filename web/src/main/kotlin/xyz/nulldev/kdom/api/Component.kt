@@ -2,6 +2,7 @@ package xyz.nulldev.kdom.api
 
 import kotlinx.html.Tag
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.Node
 import xyz.nulldev.kdom.CompiledDom
 import xyz.nulldev.kdom.util.HUGE_STRING
 import kotlin.browser.document
@@ -10,6 +11,9 @@ abstract class Component {
     @JsName("domGenerator")
     abstract fun dom(): HTMLElement
 
+    @JsName("compileListener")
+    open fun onCompile() {}
+
     @JsName("attachListener")
     open fun onAttach() {}
 
@@ -17,16 +21,52 @@ abstract class Component {
     private val registeredElements = mutableMapOf<Long, Element<out HTMLElement>>()
     private val registeredLists = mutableMapOf<Long, ComponentList<out Component>>()
 
-    var attached = false
+    var compiled = false
         private set(value) {
             if(!value && field) {
-                throw IllegalStateException("Components cannot be unattached!")
+                throw IllegalStateException("Components cannot be uncompiled!")
             }
 
             field = value
             if(value)
-                onAttach()
+                onCompile()
         }
+
+    val attached: Boolean
+        get() {
+            checkAttached()
+            return internalAttached
+        }
+
+    var internalAttached = false
+
+    fun checkAttached() {
+        fun findUltimateAncestor(node: Node): Node? {
+            // Walk up the DOM tree until we are at the top (parentNode
+            // will return null at that point).
+            // NOTE: this will return the same node that was passed in
+            // if it has no ancestors.
+            var ancestor: Node? = node
+            while(ancestor?.parentNode != null) {
+                ancestor = ancestor.parentNode
+            }
+            return ancestor
+        }
+        val newVal = findUltimateAncestor(compiledDom.root).asDynamic()?.body != null
+
+        if(!internalAttached && newVal) {
+            internalAttached = newVal
+            onAttach()
+        }
+
+        // Fire onAttach for all children
+        registeredFields.values.forEach {
+            (it.value as? Component)?.checkAttached()
+        }
+        registeredLists.values.forEach {
+            it.forEach(Component::checkAttached)
+        }
+    }
 
     //Creation elements
     protected open fun <T : Any> field(initialValue: T): Field<T> {
@@ -109,7 +149,7 @@ abstract class Component {
                         registeredFields.values.toList(),
                         registeredElements.values.toList(),
                         registeredLists.values.toList())
-                attached = true
+                compiled = true
             }
             return realCompiledDom!!
         }

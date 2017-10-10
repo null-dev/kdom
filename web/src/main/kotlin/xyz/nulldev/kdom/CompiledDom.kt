@@ -39,13 +39,15 @@ class CompiledDom(val root: HTMLElement,
                                     if (ti >= 0) {
                                         //Find before and after values
                                         val before = textChunk.value.substring(0 until ti)
-                                        val after = textChunk.value.substring(ti + textChunk.value.length)
+                                        val after = textChunk.value.substring(ti + k.length)
 
                                         //Update chunks
                                         curChunks.removeAt(index)
-                                        curChunks.add(index, TextChunk.Text(after))
+                                        if(after.isNotEmpty())
+                                            curChunks.add(index, TextChunk.Text(after))
                                         curChunks.add(index, TextChunk.Field(v))
-                                        curChunks.add(index, TextChunk.Text(before))
+                                        if(before.isNotEmpty())
+                                            curChunks.add(index, TextChunk.Text(before))
 
                                         done = false
                                         split = true
