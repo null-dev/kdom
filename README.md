@@ -26,7 +26,7 @@ class Header : Component() {
 ```
 When you click the button, the title changes!
 Let's go through how this all works:
-1. *kdom* parses the HTML, leaving replacing variable references with their current values
+1. *kdom* parses the HTML, replacing variable references with their current values
 
     *kdom* retains a reference to the locations of variables in the DOM
     
@@ -95,6 +95,21 @@ class ListItem(val index: Int, val parent: ListExample): Component() {
 }
 ```
 *kdom* supports variable lists.
+
+### Attaching components to the page
+```
+fun main(args: Array<String>) {
+    window.onload = {
+        val page = DemoRoot()
+        document.body!!.appendChild(page.compiledDom.root)
+        page.checkAttached()
+    }
+}
+```
+Components can be manually attached to the page.
+
+**After attaching a component, remember to call `checkAttached()` to fire the `onAttach` listeners.**
+
 ### Manual updating
 ```
 val htext = field(mutableListOf("Hello", "World"))

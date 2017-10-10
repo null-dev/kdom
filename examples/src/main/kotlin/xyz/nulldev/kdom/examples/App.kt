@@ -16,7 +16,6 @@ fun main(args: Array<String>) {
         ))
         document.body!!.appendChild(page.compiledDom.root)
         page.checkAttached()
-        null
     }
 }
 
