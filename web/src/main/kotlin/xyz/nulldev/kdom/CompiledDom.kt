@@ -96,6 +96,9 @@ class CompiledDom(val root: HTMLElement,
                                     mappings += if(it.field.value is Component) {
                                         //Handle component mappings
                                         DomMapping.ComponentMapping(n, it.field as Field<out Component>)
+                                    } else if(it.field.value is Node) {
+                                        //Handle node mappings
+                                        DomMapping.NodeMapping(n, it.field as Field<out Node>)
                                     } else {
                                         //Handle component lists
                                         val possibleList = lists.find { list -> list.internalField == it.field }

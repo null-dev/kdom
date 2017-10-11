@@ -20,7 +20,16 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
         override fun update() {
             node.parentNode!!.replaceChild(field.value.compiledDom.root, node)
             node = field.value.compiledDom.root
+
+            //Fire onAttach listeners
             field.value.checkAttached()
+        }
+    }
+    class NodeMapping(private var node: Node,
+                      private val field: Field<out Node>): DomMapping(listOf(field)) {
+        override fun update() {
+            node.parentNode!!.replaceChild(field.value, node)
+            node = field.value
         }
     }
     class ComponentListMapping(private val oldState: MutableList<Node>,
