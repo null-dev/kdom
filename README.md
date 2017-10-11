@@ -96,6 +96,27 @@ class ListItem(val index: Int, val parent: ListExample): Component() {
 ```
 *kdom* supports variable lists.
 
+### Fields and elements are wrappers
+```
+private val obj = field("Hello world!")
+
+println(obj) //THIS WILL NOT WORK!
+
+println(obj.value) //This is correct
+println(obj.v) //This is an alias for the above
+println(obj()) //This is also an alias
+
+obj = "Hi!" //DO NOT DO THIS!
+
+obj.value = "Hi!" //This is correct
+obj.v = "Hi!" //This is an alias for the above
+obj("Hi!") //This is also an alias
+```
+Fields and elements are wrappers around their real values.
+Fields are **always mutable**.
+Elements are **always immutable**.
+To get/set their actual values, use the `value` or `v` properties. You can also use the invoke operators to achieve the same effect.
+
 ### Attaching components to the page
 ```
 fun main(args: Array<String>) {
