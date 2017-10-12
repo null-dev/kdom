@@ -30,7 +30,7 @@ class Note(val parent: NoteApp): Component() {
             </div>
             """.toDom()
 
-        override fun onCompile() {
+        override suspend fun onCompile() {
             titleRef().onclick = {
                 parent.view(CompactView(parent))
             }
@@ -69,7 +69,7 @@ class Note(val parent: NoteApp): Component() {
             <div kref="$ref"><b>${import(parent.title)}</b> <span>${import(parent.body)}</span></div>
             """.toDom()
 
-        override fun onCompile() {
+        override suspend fun onCompile() {
             ref().onclick = {
                 parent.view(ExpandedView(parent))
             }

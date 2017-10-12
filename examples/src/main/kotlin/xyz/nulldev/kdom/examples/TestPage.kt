@@ -10,7 +10,7 @@ class TestPage: Component() {
     val dslTest = field(KotlinDSLElement())
     val noteApp = field(NoteApp())
 
-    override fun onCompile() {
+    override suspend fun onCompile() {
         button.value.onclick = {
             title.value = "You clicked the button!"
             null

@@ -1,6 +1,7 @@
 package xyz.nulldev.kdom.examples.demo
 
 import xyz.nulldev.kdom.api.Component
+import xyz.nulldev.kdom.api.util.async
 
 class DemoListPage(demoPages: List<() -> DemoPage>,
                    private val parent: DemoRoot):
@@ -22,7 +23,9 @@ class DemoListPage(demoPages: List<() -> DemoPage>,
         var generated = page()
         onAttach = {
             item().onclick = {
-                parent.setCurrentContent(page)
+                async {
+                    parent.setCurrentContent(page)
+                }
                 generated = page()
                 null
             }

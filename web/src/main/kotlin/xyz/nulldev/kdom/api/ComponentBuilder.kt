@@ -3,15 +3,15 @@ package xyz.nulldev.kdom.api
 import org.w3c.dom.HTMLElement
 
 abstract class ComponentBuilder: Component() {
-    var onCompile = {}
-    var onAttach = {}
+    var onCompile: suspend () -> Unit = {}
+    var onAttach: suspend () -> Unit = {}
 
-    override fun onCompile() {
+    override suspend fun onCompile() {
         //Hack to reference onCompile function reference
         onCompile.apply { this() }
     }
 
-    override fun onAttach() {
+    override suspend fun onAttach() {
         //Hack to reference onAttach function reference
         onAttach.apply { this() }
     }

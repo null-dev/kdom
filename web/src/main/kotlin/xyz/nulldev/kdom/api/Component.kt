@@ -4,6 +4,7 @@ import kotlinx.html.Tag
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.Node
 import xyz.nulldev.kdom.CompiledDom
+import xyz.nulldev.kdom.api.util.async
 import xyz.nulldev.kdom.util.HUGE_STRING
 import kotlin.browser.document
 
@@ -12,10 +13,10 @@ abstract class Component {
     abstract fun dom(): HTMLElement
 
     @JsName("compileListener")
-    open fun onCompile() {}
+    open suspend fun onCompile() {}
 
     @JsName("attachListener")
-    open fun onAttach() {}
+    open suspend fun onAttach() {}
 
     private val registeredFields = mutableMapOf<Long, Field<out Any>>()
     private val registeredElements = mutableMapOf<Long, Element<out HTMLElement>>()
@@ -29,7 +30,7 @@ abstract class Component {
 
             field = value
             if(value)
-                onCompile()
+                async { onCompile() }
         }
 
     val attached: Boolean
@@ -56,7 +57,7 @@ abstract class Component {
 
         if(!internalAttached && newVal) {
             internalAttached = newVal
-            onAttach()
+            async { onAttach() }
         }
 
         // Fire onAttach for all children

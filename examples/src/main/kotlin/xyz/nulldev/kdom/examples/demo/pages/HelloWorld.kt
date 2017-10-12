@@ -15,7 +15,7 @@ class HelloWorld:
         </div>
         """.toDom()
 
-    override fun onCompile() {
+    override suspend fun onCompile() {
         button().onclick = {
             title("Universe")
         }

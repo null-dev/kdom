@@ -13,7 +13,7 @@ class KotlinDSLElement: Component() {
     private val selectionColor = field("white")
     private val selectionStatus = element<HTMLDivElement>()
 
-    override fun onCompile() {
+    override suspend fun onCompile() {
         selectionStatus.value.onclick = {
             if(selectionColor.value == "green")
                 selectionColor.value = "white"

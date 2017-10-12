@@ -7,7 +7,7 @@ class NoteApp: Component() {
     val notes = componentList<Note>()
     private val addNoteswBtn = element<HTMLButtonElement>()
 
-    override fun onCompile() {
+    override suspend fun onCompile() {
         addNoteswBtn.value.onclick = {
             notes.add(Note(this))
         }

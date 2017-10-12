@@ -8,7 +8,7 @@ class ListDemo:
     val listItems = componentList<ListItem>()
     val addButton = htmlElement()
 
-    override fun onCompile() {
+    override suspend fun onCompile() {
         var lastIndex = 0
         addButton().onclick = {
             listItems.add(ListItem(++lastIndex, this))
@@ -29,7 +29,7 @@ class ListDemo:
 class ListItem(val index: Int, val parent: ListDemo): Component() {
     private val removeButton = htmlElement()
 
-    override fun onCompile() {
+    override suspend fun onCompile() {
         removeButton().onclick = {
             parent.listItems.remove(this)
         }

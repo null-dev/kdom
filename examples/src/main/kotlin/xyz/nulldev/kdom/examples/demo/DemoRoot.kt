@@ -4,6 +4,8 @@ import org.w3c.dom.HTMLAnchorElement
 import org.w3c.xhr.XMLHttpRequest
 import xyz.nulldev.kdom.api.Component
 import xyz.nulldev.kdom.api.EmptyComponent
+import xyz.nulldev.kdom.api.util.await
+import xyz.nulldev.kdom.api.util.isSuccessful
 import kotlin.dom.clear
 
 class DemoRoot(pages: List<() -> DemoPage>): Component() {
@@ -22,7 +24,7 @@ class DemoRoot(pages: List<() -> DemoPage>): Component() {
 
     private lateinit var curPageGen: () -> DemoPage
 
-    fun setCurrentContent(newContent: () -> DemoPage) {
+    suspend fun setCurrentContent(newContent: () -> DemoPage) {
         curPageGen = newContent
         backBtnField(backBtn)
         currentContent(newContent())
@@ -31,28 +33,27 @@ class DemoRoot(pages: List<() -> DemoPage>): Component() {
         showSources(currentContent().source)
     }
 
-    private fun showSources(sourcePath: String) {
+    private suspend fun showSources(sourcePath: String) {
         val xhr = XMLHttpRequest()
-        xhr.onreadystatechange = {
-            if (xhr.readyState.toInt() == 4 && xhr.status.toInt() == 200) {
-                sourceObj().clear()
-                sourceObj().textContent = xhr.responseText
-                js("hljs").highlightBlock(sourceObj())
-                githubLink().href = "https://github.com/null-dev/kdom/blob/master/$sourcePath"
-            }
-        }
         xhr.open("get", "https://raw.githubusercontent.com/null-dev/kdom/master/$sourcePath", true)
         xhr.send()
+        xhr.await()
+        if(xhr.isSuccessful) {
+            sourceObj().clear()
+            sourceObj().textContent = xhr.responseText
+            js("hljs").highlightBlock(sourceObj())
+            githubLink().href = "https://github.com/null-dev/kdom/blob/master/$sourcePath"
+        }
     }
 
-    override fun onCompile() {
+    override suspend fun onCompile() {
         resetIcon().onclick = {
             currentContent(curPageGen())
         }
         showSources(demoListPage.source)
     }
 
-    override fun onAttach() {
+    override suspend fun onAttach() {
         val dialogObj = js("(function(d) {return new mdc.dialog.MDCDialog(d);})")(dialog())
         codeIcon().onclick = {
             dialogObj.show()
