@@ -1,5 +1,4 @@
 group 'xyz.nulldev.kdom'
-version '1.0-SNAPSHOT'
 
 task wrapper(type: Wrapper) {
     gradleVersion = "4.1"
@@ -10,9 +9,11 @@ buildscript {
 
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
 }
 

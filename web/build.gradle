@@ -1,6 +1,9 @@
 group 'xyz.nulldev.kdom-web'
+version "1.0"
 
 apply plugin: 'kotlin2js'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 repositories {
     mavenCentral()
@@ -15,4 +18,29 @@ dependencies {
 compileKotlin2Js {
     kotlinOptions.moduleKind = "umd"
     kotlinOptions.sourceMap = true
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['ReleasePublication']
+    publish = true
+    pkg {
+        repo = 'kdom'
+        name = 'kdom'
+        version {
+            name = project.version
+            released  = new Date()
+        }
+    }
+}
+
+publishing {
+    publications {
+        ReleasePublication(MavenPublication) {
+            from components.java
+            groupId 'xyz.nulldev.kdom'
+            artifactId 'kdom'
+        }
+    }
 }
