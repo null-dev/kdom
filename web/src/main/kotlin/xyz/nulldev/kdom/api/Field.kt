@@ -7,14 +7,7 @@ open class Field<T : Any> internal constructor(val id: Long, initialVal: T):
     override var value = initialVal
         set(value) {
             field = value
-
-            //Update transformed copies
-            transformListeners.forEach {
-                it.setAndTransformValue(value)
-            }
-
-            //Do not update transformed copies again, only update our copy
-            updateThis()
+            update()
         }
 
     override val updateListeners = mutableListOf<UpdateListener>()
@@ -22,11 +15,6 @@ open class Field<T : Any> internal constructor(val id: Long, initialVal: T):
     internal val transformListeners = mutableListOf<TransformedField<T, *>>()
 
     override fun update() {
-        updateOthers()
-        updateThis()
-    }
-
-    fun updateThis() {
         //Fire update listeners
         updateListeners.forEach {  it(this) }
 
@@ -38,11 +26,12 @@ open class Field<T : Any> internal constructor(val id: Long, initialVal: T):
                     it.update()
             }
         }
-    }
 
-    fun updateOthers() {
         //Update transformed copies
-        transformListeners.forEach { it.update() }
+        transformListeners.forEach {
+            //Forcibly re-transform original values
+            it.setAndTransformValue(value)
+        }
     }
 
     override fun addUpdateListener(listener: UpdateListener) {
