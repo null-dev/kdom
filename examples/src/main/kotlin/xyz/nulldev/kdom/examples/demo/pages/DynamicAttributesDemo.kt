@@ -2,6 +2,7 @@ package xyz.nulldev.kdom.examples.demo.pages
 
 import xyz.nulldev.kdom.api.Component
 import xyz.nulldev.kdom.examples.demo.DemoPage
+import kotlin.js.Math
 
 class DynamicAttributesDemo:
         DemoPage("Dynamic attributes", "examples/src/main/kotlin/xyz/nulldev/kdom/examples/demo/pages/DynamicAttributesDemo.kt") {
@@ -17,7 +18,7 @@ class DynamicAttributesDemo:
             </figure>
             ${field(slider(0, 100, 100) { opacity(it / 100f) })}
             <figure class="mdc-elevation--z8" style="padding: 16px;opacity:$opacity;background-color:red">
-                <figcaption style=""><b>Opacity: $opacity</b></figcaption>
+                <figcaption style=""><b>Opacity: ${opacity.transform { "${Math.round(it * 100)}%" }}</b></figcaption>
             </figure>
         </div>
         """.toDom()

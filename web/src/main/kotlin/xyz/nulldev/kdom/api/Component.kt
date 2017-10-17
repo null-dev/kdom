@@ -39,7 +39,7 @@ abstract class Component {
             return internalAttached
         }
 
-    var internalAttached = false
+    private var internalAttached = false
 
     fun checkAttached() {
         fun findUltimateAncestor(node: Node): Node? {
@@ -71,20 +71,13 @@ abstract class Component {
 
     //Creation elements
     protected open fun <T : Any> field(initialValue: T): Field<T> {
-        val id = lastId++
-        val field = Field(id, initialValue, { field ->
-            //Update mappings when variable changes
-            compiledDom.mappings.forEach {
-                if(it.fields.contains(field))
-                    it.update()
-            }
-        })
-        registeredFields.put(id, field)
+        val field = Field(nextId(), initialValue)
+        import(field)
         return field
     }
 
     protected open fun <T : HTMLElement> element(): Element<T> {
-        val id = lastId++
+        val id = nextId()
         val element = Element<T>(id, this)
         registeredElements.put(id, element)
         return element
@@ -96,47 +89,29 @@ abstract class Component {
     }
 
     protected open fun <T : Component> componentList(vararg initialValues: T): ComponentList<T> {
-        val id = lastId++
-        val clist = ComponentList(id, { list ->
-            //Update mappings when list changes
-            compiledDom.mappings.forEach {
-                if(it.fields.contains(list.internalField))
-                    it.update()
-            }
-        }, mutableListOf(*initialValues))
-        registeredLists.put(id, clist)
+        val id = nextId()
+        val clist = ComponentList(id, mutableListOf(*initialValues))
+        import(clist)
         return clist
     }
 
     //Importing
+    internal fun <T : Any> internalImportRelay(field: Field<T>) = import(field)
     protected open fun <T : Any> import(field: Field<T>): Field<T> {
         if(!registeredFields.containsKey(field.id)) {
             registeredFields.put(field.id, field)
-            field.updateListeners.add({ f ->
-                //Update mappings when variable changes
-                compiledDom.mappings.forEach {
-                    if (it.fields.contains(f))
-                        it.update()
-                }
-            })
+
+            if(!field.parentComponents.contains(this))
+                field.parentComponents.add(this)
         }
         return field
-    }
-    protected open fun <T : HTMLElement> import(element: Element<T>): Element<T> {
-        if(!registeredElements.containsKey(element.id))
-            registeredElements.put(element.id, element)
-        return element
     }
     protected open fun <T : Component> import(components: ComponentList<T>): ComponentList<T> {
         if(!registeredLists.containsKey(components.id)) {
             registeredLists.put(components.id, components)
-            components.updateListeners.add({ list ->
-                //Update mappings when list changes
-                compiledDom.mappings.forEach {
-                    if (it.fields.contains(list.internalField))
-                        it.update()
-                }
-            })
+
+            if(!components.parentComponents.contains(this))
+                components.parentComponents.add(this)
         }
         return components
     }
@@ -178,6 +153,8 @@ abstract class Component {
 
     companion object {
         private var lastId = 0L
+
+        internal fun nextId() = lastId++
 
         fun from(domBuilder: ComponentBuilder.() -> HTMLElement): Component {
             return object: ComponentBuilder() {

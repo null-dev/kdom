@@ -22,6 +22,5 @@ abstract class ComponentBuilder: Component() {
     public override fun htmlElement() = super.htmlElement()
     public override fun <T : Component> componentList(vararg initialValues: T) = super.componentList(*initialValues)
     public override fun <T : Any> import(field: Field<T>)=  super.import(field)
-    public override fun <T : HTMLElement> import(element: Element<T>) = super.import(element)
     public override fun <T : Component> import(components: ComponentList<T>) = super.import(components)
 }

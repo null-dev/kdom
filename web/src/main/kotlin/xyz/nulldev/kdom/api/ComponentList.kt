@@ -1,18 +1,38 @@
 package xyz.nulldev.kdom.api
 
 class ComponentList<T : Component>(val id: Long,
-                                   onUpdate: (ComponentList<T>) -> Unit,
                                    private val internalList: MutableList<T> = mutableListOf()):
         List<T> by internalList, AbstractMutableList<T>(), Updatable {
-    internal val internalField = Field(id, internalList, {
-        onUpdate(this)
-    })
+    internal val internalField = Field(id, internalList)
 
     override fun update() {
+        //Fire update listeners
         updateListeners.forEach { it(this) }
+
+        //Update parent components
+        parentComponents.forEach {
+            //Update mappings when list changes
+            it.compiledDom.mappings.forEach {
+                if (it.fields.contains(internalField))
+                    it.update()
+            }
+        }
     }
 
-    internal val updateListeners = mutableListOf(onUpdate)
+    override val updateListeners = mutableListOf<UpdateListener>()
+    internal val parentComponents = mutableListOf<Component>()
+
+    override fun addUpdateListener(listener: UpdateListener) {
+        updateListeners += listener
+    }
+
+    override fun removeUpdateListener(listener: UpdateListener) {
+        updateListeners -= listener
+    }
+
+    override fun clearUpdateListeners() {
+        updateListeners.clear()
+    }
 
     //Delegated mutation observed methods
     override fun add(index: Int, element: T) {
