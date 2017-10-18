@@ -124,7 +124,8 @@ abstract class Component {
                 realCompiledDom = CompiledDom.fromHtml(dom(),
                         registeredFields.values.toList(),
                         registeredElements.values.toList(),
-                        registeredLists.values.toList())
+                        registeredLists.values.toList(),
+                        this)
                 compiled = true
             }
             return realCompiledDom!!

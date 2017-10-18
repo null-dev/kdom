@@ -4,13 +4,13 @@ import org.w3c.dom.HTMLElement
 import xyz.nulldev.kdom.util.HUGE_STRING
 
 class Element<T : HTMLElement>(val id: Long,
-                               private val parent: Component): ValueStore<T> {
+                               internal var parent: Component?): ValueStore<T> {
     override var value: T
         set(v) {
             throw IllegalArgumentException("The value of an element reference cannot be changed!")
         }
         get() {
-            parent.compiledDom //Forcibly compile DOM
+            parent?.compiledDom //Forcibly compile DOM
             return current
         }
 

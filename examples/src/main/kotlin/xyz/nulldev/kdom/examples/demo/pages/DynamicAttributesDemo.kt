@@ -18,7 +18,7 @@ class DynamicAttributesDemo:
             </figure>
             ${field(slider(0, 100, 100) { opacity(it / 100f) })}
             <figure class="mdc-elevation--z8" style="padding: 16px;opacity:$opacity;background-color:red">
-                <figcaption style=""><b>Opacity: ${opacity.transform { "${Math.round(it * 100)}%" }}</b></figcaption>
+                <figcaption><b>Opacity: ${opacity.transform { "${Math.round(it * 100)}%" }}</b></figcaption>
             </figure>
         </div>
         """.toDom()

@@ -1,13 +1,30 @@
 package xyz.nulldev.kdom
 
 import org.w3c.dom.*
-import xyz.nulldev.kdom.api.Component
-import xyz.nulldev.kdom.api.ComponentList
-import xyz.nulldev.kdom.api.Field
+import xyz.nulldev.kdom.api.*
 import kotlin.browser.document
 
 sealed class DomMapping(val fields: List<Field<out Any>>) {
     abstract fun update()
+
+    protected fun MutableList<Node>.replaceWith(newNodes: List<Node>) {
+        //Get parent
+        val parent = this[0].parentNode!!
+        //Insert dummy node
+        val dummy = document.createTextNode("")
+        parent.insertBefore(dummy, this[0])
+        //Remove all old nodes
+        this.forEach { parent.removeChild(it) }
+        //Clear old state
+        this.clear()
+        //Insert new nodes and save to state
+        newNodes.forEach {
+            this.add(it)
+            parent.insertBefore(it, dummy)
+        }
+        //Save dummy node to state
+        this.add(dummy)
+    }
 
     class TextMapping(private val text: Text,
                       private val field: Field<out Any>): DomMapping(listOf(field)) {
@@ -33,25 +50,12 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
         }
     }
     class ComponentListMapping(private val oldState: MutableList<Node>,
-                               private val list: ComponentList<out Component>): DomMapping(listOf(list.internalField)) {
+                               private val list: ComponentList<out Component>):
+            DomMapping(listOf(list.internalField)) {
         override fun update() {
-            //Get parent
-            val parent = oldState[0].parentNode!!
-            //Insert dummy node
-            val dummy = document.createTextNode("")
-            parent.insertBefore(dummy, oldState[0])
-            //Remove all old nodes
-            oldState.forEach { parent.removeChild(it) }
-            //Clear old state
-            oldState.clear()
-            //Insert new nodes and save to state
-            list.forEach {
-                val cdom = it.compiledDom.root
-                oldState.add(cdom)
-                parent.insertBefore(cdom, dummy)
-            }
-            //Save dummy node to state
-            oldState.add(dummy)
+            //Replace old nodes
+            oldState.replaceWith(list.map { it.compiledDom.root })
+
             //Fire onAttach listeners
             list.forEach {
                 it.checkAttached()
@@ -70,6 +74,27 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
                     is TextChunk.Field -> it.field.value.toString()
                 }
             }
+        }
+    }
+    class FieldMapping(private val field: Field<String>,
+                       private val chunks: List<TextChunk>):
+            DomMapping(chunks
+                    .filterIsInstance<TextChunk.Field>()
+                    .map(TextChunk.Field::field)) {
+        override fun update() {
+            field.value = chunks.joinToString(separator = "") {
+                when (it) {
+                    is TextChunk.Text -> it.value
+                    is TextChunk.Field -> it.field.value.toString()
+                }
+            }
+        }
+    }
+    class CustomElementContentMapping(private val oldState: MutableList<Node>,
+                                      private val field: ReadOnlyField<CustomElementContent>):
+            DomMapping(listOf(field)) {
+        override fun update() {
+            oldState.replaceWith(field.value.childNodes)
         }
     }
 }
