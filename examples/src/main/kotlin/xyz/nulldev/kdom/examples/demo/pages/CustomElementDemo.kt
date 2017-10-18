@@ -7,6 +7,8 @@ import org.w3c.dom.set
 import xyz.nulldev.kdom.api.Component
 import xyz.nulldev.kdom.api.CustomElementSpec
 import xyz.nulldev.kdom.api.SpecManager
+import xyz.nulldev.kdom.api.util.dataValue
+import xyz.nulldev.kdom.api.util.emit
 import xyz.nulldev.kdom.examples.demo.DemoPage
 import kotlin.js.Math
 
@@ -50,10 +52,10 @@ class CustomElementDemo:
             title("Universe")
         }
         elevationSlider().oninput = {
-            elevation(elevationSlider().dataset["value"]!!.toInt())
+            elevation(elevationSlider().dataValue.toInt())
         }
         opacitySlider().oninput = {
-            opacity(opacitySlider().dataset["value"]!!.toFloat() / 100f)
+            opacity(opacitySlider().dataValue.toFloat() / 100f)
         }
     }
 }
@@ -75,8 +77,8 @@ val MDCSliderSpec = CustomElementSpec("mdc-slider", {
 
         onAttach = {
             slider.listen("MDCSlider:input", {
-                it.root().dataset["value"] = slider.value
-                it.root().dispatchEvent(Event("input", EventInit(true)))
+                it.root().dataValue = slider.value
+                it.root().emit("input")
             })
         }
 
