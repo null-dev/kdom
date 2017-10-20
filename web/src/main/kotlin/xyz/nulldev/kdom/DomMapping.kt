@@ -82,12 +82,17 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
                     .filterIsInstance<TextChunk.Field>()
                     .map(TextChunk.Field::field)) {
         override fun update() {
-            field.value = chunks.joinToString(separator = "") {
+            val newValue = chunks.joinToString(separator = "") {
                 when (it) {
                     is TextChunk.Text -> it.value
                     is TextChunk.Field -> it.field.value.toString()
                 }
             }
+
+            if(field is ReadOnlyField)
+                field.forceSetValue(newValue)
+            else
+                field.value = newValue
         }
     }
     class CustomElementContentMapping(private val oldState: MutableList<Node>,
