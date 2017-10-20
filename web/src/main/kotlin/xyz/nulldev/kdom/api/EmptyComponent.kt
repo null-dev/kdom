@@ -1,5 +1,5 @@
 package xyz.nulldev.kdom.api
 
-object EmptyComponent : Component() {
+class EmptyComponent : Component() {
     override fun dom() = "<script></script>".toDom()
 }

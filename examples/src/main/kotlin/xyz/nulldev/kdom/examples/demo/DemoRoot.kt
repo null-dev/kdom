@@ -12,7 +12,7 @@ class DemoRoot(pages: List<() -> DemoPage>): Component() {
     private val demoListPage = DemoListPage(pages, this)
 
     private val currentContent = field<DemoPage>(demoListPage)
-    private val backBtnField = field<Component>(EmptyComponent)
+    private val backBtnField = field<Component>(EmptyComponent())
     private val title = field(MAIN_TITLE)
     private val resetIconVisibility = field("none")
 
@@ -110,7 +110,7 @@ class DemoRoot(pages: List<() -> DemoPage>): Component() {
         val btn = htmlElement()
         onAttach = {
             btn().onclick = {
-                backBtnField(EmptyComponent)
+                backBtnField(EmptyComponent())
                 currentContent(demoListPage)
                 title(MAIN_TITLE)
                 resetIconVisibility("none")
