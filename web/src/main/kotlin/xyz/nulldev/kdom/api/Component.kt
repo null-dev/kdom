@@ -129,7 +129,7 @@ abstract class Component {
                         this)
 
                 //Register compiled DOM
-                componentDb.set(realCompiledDom!!.root, this)
+                realCompiledDom!!.root.asDynamic()[COMPONENT_KEY] = this
 
                 compiled = true
             }
@@ -160,8 +160,8 @@ abstract class Component {
         }
 
     companion object {
+        internal val COMPONENT_KEY = "${HUGE_STRING}_COMPONENT"
         private var lastId = 0L
-        internal val componentDb = WeakMap<HTMLElement, Component>()
 
         internal fun nextId() = lastId++
 

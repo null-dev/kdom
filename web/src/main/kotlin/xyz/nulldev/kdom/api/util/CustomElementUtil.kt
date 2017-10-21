@@ -26,7 +26,7 @@ fun HTMLElement.emit(type: String,
 }
 
 fun <T : Component> HTMLElement.component(): T {
-    return (Component.componentDb.get(this)
+    return (asDynamic()[Component.COMPONENT_KEY]
             ?: throw IllegalArgumentException("This element is not a component!")) as T
 }
 
