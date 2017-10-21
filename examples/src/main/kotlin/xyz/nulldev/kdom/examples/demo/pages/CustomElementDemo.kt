@@ -1,9 +1,5 @@
 package xyz.nulldev.kdom.examples.demo.pages
 
-import org.w3c.dom.EventInit
-import org.w3c.dom.events.Event
-import org.w3c.dom.get
-import org.w3c.dom.set
 import xyz.nulldev.kdom.api.Component
 import xyz.nulldev.kdom.api.CustomElementSpec
 import xyz.nulldev.kdom.api.SpecManager

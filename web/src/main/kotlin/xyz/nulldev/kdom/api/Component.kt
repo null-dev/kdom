@@ -1,5 +1,6 @@
 package xyz.nulldev.kdom.api
 
+import jsext.WeakMap
 import kotlinx.html.Tag
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.Node
@@ -126,6 +127,10 @@ abstract class Component {
                         registeredElements.values.toList(),
                         registeredLists.values.toList(),
                         this)
+
+                //Register compiled DOM
+                componentDb.set(realCompiledDom!!.root, this)
+
                 compiled = true
             }
             return realCompiledDom!!
@@ -143,6 +148,8 @@ abstract class Component {
         val out = t.asDynamic().content.cloneNode(true).children
         if(out.length > 1)
             throw IllegalArgumentException("Components that contain multiple elements must be wrapped in a parent element!")
+        if(out[0].tagName.includes("-"))
+            throw IllegalArgumentException("Components that contain a single custom element must be wrapped in a parent element!")
         return out[0]
     }
 
@@ -154,6 +161,7 @@ abstract class Component {
 
     companion object {
         private var lastId = 0L
+        internal val componentDb = WeakMap<HTMLElement, Component>()
 
         internal fun nextId() = lastId++
 

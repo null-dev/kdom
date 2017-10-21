@@ -5,6 +5,8 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.get
 import org.w3c.dom.set
+import xyz.nulldev.kdom.api.Component
+import xyz.nulldev.kdom.api.Element
 
 private const val DATA_VALUE_KEY = "value"
 
@@ -21,4 +23,13 @@ fun HTMLElement.emit(type: String,
                      cancelable: Boolean = false,
                      composed: Boolean = false) {
     dispatchEvent(Event(type, EventInit(bubbles, cancelable, composed)))
+}
+
+fun <T : Component> HTMLElement.component(): T {
+    return (Component.componentDb.get(this)
+            ?: throw IllegalArgumentException("This element is not a component!")) as T
+}
+
+fun <T : Component> Element<*>.component(): T {
+    return value.component()
 }
