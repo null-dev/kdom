@@ -3,7 +3,14 @@ package xyz.nulldev.kdom.api
 import org.w3c.dom.HTMLElement
 
 abstract class ComponentBuilder: Component() {
+    /**
+     * @see Component.onCompile
+     */
     var onCompile: suspend () -> Unit = {}
+
+    /**
+     * @see Component.onAttach
+     */
     var onAttach: suspend () -> Unit = {}
 
     override suspend fun onCompile() {

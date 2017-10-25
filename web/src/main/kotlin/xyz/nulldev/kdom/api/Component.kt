@@ -1,6 +1,5 @@
 package xyz.nulldev.kdom.api
 
-import jsext.WeakMap
 import kotlinx.html.Tag
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.Node
@@ -10,12 +9,21 @@ import xyz.nulldev.kdom.util.HUGE_STRING
 import kotlin.browser.document
 
 abstract class Component {
+    /**
+     * The root HTML element of this page
+     */
     @JsName("domGenerator")
     abstract fun dom(): HTMLElement
 
+    /**
+     * Executed when the component is compiled
+     */
     @JsName("compileListener")
     open suspend fun onCompile() {}
 
+    /**
+     * Executed when the component is attached to the document
+     */
     @JsName("attachListener")
     open suspend fun onAttach() {}
 
@@ -23,6 +31,9 @@ abstract class Component {
     private val registeredElements = mutableMapOf<Long, Element<out HTMLElement>>()
     private val registeredLists = mutableMapOf<Long, ComponentList<out Component>>()
 
+    /**
+     * Whether or not this component has been compiled
+     */
     var compiled = false
         private set(value) {
             if(!value && field) {
@@ -34,14 +45,27 @@ abstract class Component {
                 async { onCompile() }
         }
 
+    /**
+     * Whether or not this component is attached to the document
+     *
+     * May return `true` if after the component has been detached from the document
+     */
     val attached: Boolean
         get() {
             checkAttached()
             return internalAttached
         }
 
+    /**
+     * Whether or not this component is attached to the document
+     *
+     * To be used in the future for caching if possible
+     */
     private var internalAttached = false
 
+    /**
+     * Recalculate `internalAttached`
+     */
     fun checkAttached() {
         fun findUltimateAncestor(node: Node): Node? {
             // Walk up the DOM tree until we are at the top (parentNode
@@ -71,12 +95,23 @@ abstract class Component {
     }
 
     //Creation elements
+    /**
+     * Create a field in this component
+     *
+     * @param initialValue The initial value of the field
+     * @return The created field
+     */
     protected open fun <T : Any> field(initialValue: T): Field<T> {
         val field = Field(nextId(), initialValue)
         import(field)
         return field
     }
 
+    /**
+     * Create an element reference in this component
+     *
+     * @return The created element reference
+     */
     protected open fun <T : HTMLElement> element(): Element<T> {
         val id = nextId()
         val element = Element<T>(id, this)
@@ -84,11 +119,19 @@ abstract class Component {
         return element
     }
 
-    //Alias to element (but without types)
+    /**
+     * Alias to `element()` without generics
+     */
     protected open fun htmlElement(): Element<HTMLElement> {
         return element()
     }
 
+    /**
+     * Create a component list in this component
+     *
+     * @param initialValues The initial content of the component list
+     * @return The created component list
+     */
     protected open fun <T : Component> componentList(vararg initialValues: T): ComponentList<T> {
         val id = nextId()
         val clist = ComponentList(id, mutableListOf(*initialValues))
@@ -97,7 +140,19 @@ abstract class Component {
     }
 
     //Importing
+
+    /**
+     * Internal alias to `import()` with more lenient visibility modifiers
+     */
     internal fun <T : Any> internalImportRelay(field: Field<T>) = import(field)
+
+    /**
+     * Import a field into this component
+     * Allows the use of an external field in string substitutions in this component
+     *
+     * @param field The field to import
+     * @return The imported field (same as original field instance)
+     */
     protected open fun <T : Any> import(field: Field<T>): Field<T> {
         if(!registeredFields.containsKey(field.id)) {
             registeredFields.put(field.id, field)
@@ -107,6 +162,14 @@ abstract class Component {
         }
         return field
     }
+
+    /**
+     * Import a component list into this component
+     * Allows the use of an external component list in string substitutions in this component
+     *
+     * @param components The component list to import
+     * @return The imported field (same as original field instance)
+     */
     protected open fun <T : Component> import(components: ComponentList<T>): ComponentList<T> {
         if(!registeredLists.containsKey(components.id)) {
             registeredLists.put(components.id, components)
@@ -118,7 +181,15 @@ abstract class Component {
     }
 
     // DOM compiler
+
+    // Internal compiled copy of dom
     private var realCompiledDom: CompiledDom? = null
+
+    /**
+     * Compiled DOM for access to the DOM's HTML content and mappings
+     *
+     * Evaluated on demand
+     */
     val compiledDom: CompiledDom
         get() {
             if(realCompiledDom == null) {
@@ -137,6 +208,11 @@ abstract class Component {
         }
 
     //Extension functions
+    /**
+     * Parse an HTML string in an HTML component
+     *
+     * Does NOT allow multiple root components
+     */
     fun String.toDom(): HTMLElement {
         val trimmed = this.trim()
         if(trimmed.startsWith("$HUGE_STRING-kdom")
@@ -153,6 +229,9 @@ abstract class Component {
         return out[0]
     }
 
+    /**
+     * KotlinX HTML alias to the kref attribute
+     */
     var Tag.kref: Element<*>
         get() = throw UnsupportedOperationException("This attribute can only be written to!")
         set(value) {
@@ -163,8 +242,12 @@ abstract class Component {
         internal val COMPONENT_KEY = "${HUGE_STRING}_COMPONENT"
         private var lastId = 0L
 
+        // Next field/element/list ID
         internal fun nextId() = lastId++
 
+        /**
+         * Convenience method used to build Components dynamically
+         */
         fun from(domBuilder: ComponentBuilder.() -> HTMLElement): Component {
             return object: ComponentBuilder() {
                 override fun dom() = domBuilder(this)

@@ -126,23 +126,28 @@ class CompiledDom(val root: HTMLElement,
                                 else if(it is TextChunk.Field) {
                                     val n = document.createTextNode("")
                                     newChildNodes += n
-                                    mappings += if(it.field.value is Component) {
-                                        //Handle component mappings
-                                        DomMapping.ComponentMapping(n, it.field as Field<out Component>)
-                                    } else if(it.field.value is Node) {
-                                        //Handle node mappings
-                                        DomMapping.NodeMapping(n, it.field as Field<out Node>)
-                                    } else if(it.field.value is CustomElementContent) {
-                                        //Handle custom element content
-                                        DomMapping.CustomElementContentMapping(mutableListOf(n),
-                                                it.field as ReadOnlyField<CustomElementContent>)
-                                    } else {
-                                        //Handle component lists
-                                        val possibleList = lists.find { list -> list.internalField == it.field }
-                                        if(possibleList != null)
-                                            DomMapping.ComponentListMapping(mutableListOf(n), possibleList)
-                                        else
-                                            DomMapping.TextMapping(n, it.field)
+                                    mappings += when(it.field.value) {
+                                        is Component -> {
+                                            //Handle component mappings
+                                            DomMapping.ComponentMapping(n, it.field as Field<out Component>)
+                                        }
+                                        is Node -> {
+                                            //Handle node mappings
+                                            DomMapping.NodeMapping(n, it.field as Field<out Node>)
+                                        }
+                                        is CustomElementContent -> {
+                                            //Handle custom element content
+                                            DomMapping.CustomElementContentMapping(mutableListOf(n),
+                                                    it.field as ReadOnlyField<CustomElementContent>)
+                                        }
+                                        else -> {
+                                            //Handle component lists
+                                            val possibleList = lists.find { list -> list.internalField == it.field }
+                                            if(possibleList != null)
+                                                DomMapping.ComponentListMapping(mutableListOf(n), possibleList)
+                                            else
+                                                DomMapping.TextMapping(n, it.field)
+                                        }
                                     }
                                 }
                             }
