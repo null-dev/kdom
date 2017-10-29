@@ -21,14 +21,11 @@ class DemoListPage(demoPages: Map<String, () -> DemoPage>,
     private fun demoListItem(path: String, page: () -> DemoPage) = Component.from {
         val item = htmlElement()
 
-        var generated = page()
         onAttach = {
             item().onclick = {
                 async {
-//                    parent.setCurrentContent(page)
                     DemoApplication.goToPath(path)
                 }
-                generated = page()
                 null
             }
         }
@@ -39,7 +36,7 @@ class DemoListPage(demoPages: Map<String, () -> DemoPage>,
                 <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">
                     help
                 </i>
-                ${generated.name}
+                ${page().name}
             </span>
             """.toDom()
     }
