@@ -27,21 +27,25 @@ class Router(init: RouterDSL): RouteHandler {
             val curPathIndex = context.path.size - context.relativePath.size
 
             for(item in path.splitPath) {
-                val current = context.path.getOrNull(curPathIndex + toPop)
-                    ?: continue@routers // Our current path does not match
-
-                when {
+                when(item) {
                     //TODO Custom path matcher function support
-                    item == ".." -> toPop--
-                    item == "." -> {} // Matches anything
-                    item == "*" -> toPop++ //Matches anything but also pops it from the queue stack
-                    item.startsWith(":") -> {
-                        //Matches anything, pops from queue stack and assigns as var
-                        toPop++
-                        possibleUrlVars.put(item.substring(1), current)
+                    ".." -> toPop--
+                    "." -> {} // Matches anything
+                    "*" -> toPop++ //Matches anything but also pops it from the queue stack
+                    else -> {
+                        val current = context.path.getOrNull(curPathIndex + toPop)
+                                ?: continue@routers // Our current path does not match
+
+                        when {
+                            item.startsWith(":") -> {
+                                //Matches anything, pops from queue stack and assigns as var
+                                toPop++
+                                possibleUrlVars.put(item.substring(1), current)
+                            }
+                            item == current -> toPop++ // Matches current
+                            else -> continue@routers // Does not match
+                        }
                     }
-                    item == current -> toPop++ // Matches current
-                    else -> continue@routers // Does not match
                 }
             }
 

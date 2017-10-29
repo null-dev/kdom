@@ -33,8 +33,11 @@ class DemoRoot(val pages: Map<String, () -> DemoPage>): RoutableComponent() {
         Router {
             pages.forEach { (page, gen) ->
                 page {
-                    async {
-                        setCurrentContent(gen)
+                    if(it.prevPath?.first() != page.trim('/')) {
+                        setCurrentContent(gen).handle(it)
+                    } else {
+                        console.log("Delegating path request to child page: ${it.path.joinToString("/")}")
+                        currentContent().handle(it)
                     }
                     it.finish()
                 }
@@ -50,13 +53,17 @@ class DemoRoot(val pages: Map<String, () -> DemoPage>): RoutableComponent() {
         }.handle(context)
     }
 
-    suspend fun setCurrentContent(newContent: () -> DemoPage) {
+    fun setCurrentContent(newContent: () -> DemoPage): DemoPage {
         curPageGen = newContent
         backBtnField(backBtn)
-        currentContent(newContent())
+        val content = newContent()
+        currentContent(content)
         title(currentContent().name)
         resetIconVisibility("initial")
-        showSources(currentContent().source)
+        async {
+            showSources(currentContent().source)
+        }
+        return content
     }
 
     private suspend fun showSources(sourcePath: String) {

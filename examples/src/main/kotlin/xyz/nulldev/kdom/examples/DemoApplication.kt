@@ -12,7 +12,8 @@ object DemoApplication : Application() {
             "/dynamic-attributes" to { DynamicAttributesDemo() },
             "/lists" to { ListDemo() },
             "/custom-elements" to { CustomElementDemo() },
-            "/calling-custom-element-functions" to { CallingCustomElementFunctions() }
+            "/calling-custom-element-functions" to { CallingCustomElementFunctions() },
+            "/stack-based-routing/" to { StackBasedRoutingDemo() }
     ))
 
     override val router = demoRoot

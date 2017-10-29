@@ -35,6 +35,9 @@ class RouteContext(
     val relativePath
         get() = path.drop(relativePathStartIndex)
 
+    val currentPath
+        get() = path.take(relativePathStartIndex)
+
     private var relativePathStartIndex = 0
 
     fun popRelativePath() {
@@ -55,8 +58,12 @@ class RouteContext(
         mutableTags.put(name, value)
     }
 
-    fun <T : Any> removeTag(name: String): T? {
+    fun <T : Any> getTag(name: String): T? {
         return mutableTags[name]?.let { it as T }
+    }
+
+    fun <T : Any> removeTag(name: String): T? {
+        return mutableTags.remove(name)?.let { it as T }
     }
 
     fun pushUrlVar(name: String, value: String) {

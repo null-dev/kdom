@@ -30,10 +30,20 @@ abstract class Application {
     }
 
     fun silentGoToPath(path: String) {
-        router.handle(RouteContext.from(path, null))
+        val newPath = relToAbsPath(path)
+        router.handle(RouteContext.from(newPath, window.location.href))
     }
 
     fun pushPath(path: String) {
-        window.history.pushState(null, path, path)
+        val newPath = relToAbsPath(path)
+        window.history.pushState(null, newPath, newPath)
+    }
+
+    private fun relToAbsPath(path: String): String {
+        if(path.startsWith("/"))
+            return path
+
+        val curUrl = "/" + window.location.pathname.removeSuffix("/").removePrefix("/") + "/"
+        return curUrl + path
     }
 }
