@@ -9,7 +9,8 @@ import xyz.nulldev.kdom.examples.demo.DemoPage
 import kotlin.js.Math
 
 class CustomElementDemo:
-        DemoPage("Custom elements", "examples/src/main/kotlin/xyz/nulldev/kdom/examples/demo/pages/CustomElementDemo.kt") {
+        DemoPage("Custom elements",
+                "examples/src/main/kotlin/xyz/nulldev/kdom/examples/demo/pages/CustomElementDemo.kt") {
     private val title = field("World")
     private val button = htmlElement()
 

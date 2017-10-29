@@ -4,11 +4,16 @@ import org.w3c.dom.HTMLAnchorElement
 import org.w3c.xhr.XMLHttpRequest
 import xyz.nulldev.kdom.api.Component
 import xyz.nulldev.kdom.api.EmptyComponent
+import xyz.nulldev.kdom.api.components.RoutableComponent
+import xyz.nulldev.kdom.api.routing.RouteContext
+import xyz.nulldev.kdom.api.routing.Router
+import xyz.nulldev.kdom.api.util.async
 import xyz.nulldev.kdom.api.util.await
 import xyz.nulldev.kdom.api.util.isSuccessful
+import xyz.nulldev.kdom.examples.DemoApplication
 import kotlin.dom.clear
 
-class DemoRoot(pages: List<() -> DemoPage>): Component() {
+class DemoRoot(val pages: Map<String, () -> DemoPage>): RoutableComponent() {
     private val demoListPage = DemoListPage(pages, this)
 
     private val currentContent = field<DemoPage>(demoListPage)
@@ -23,6 +28,27 @@ class DemoRoot(pages: List<() -> DemoPage>): Component() {
     private val githubLink = element<HTMLAnchorElement>()
 
     private lateinit var curPageGen: () -> DemoPage
+
+    override fun handle(context: RouteContext) {
+        Router {
+            pages.forEach { (page, gen) ->
+                page {
+                    async {
+                        setCurrentContent(gen)
+                    }
+                    it.finish()
+                }
+            }
+            "./" {
+                backBtnField(EmptyComponent())
+                currentContent(demoListPage)
+                title(MAIN_TITLE)
+                resetIconVisibility("none")
+                it.finish()
+            }
+
+        }.handle(context)
+    }
 
     suspend fun setCurrentContent(newContent: () -> DemoPage) {
         curPageGen = newContent
@@ -110,10 +136,7 @@ class DemoRoot(pages: List<() -> DemoPage>): Component() {
         val btn = htmlElement()
         onAttach = {
             btn().onclick = {
-                backBtnField(EmptyComponent())
-                currentContent(demoListPage)
-                title(MAIN_TITLE)
-                resetIconVisibility("none")
+                DemoApplication.goToPath("/")
             }
         }
         //language=html
