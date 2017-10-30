@@ -35,13 +35,13 @@ abstract class Application {
     fun silentGoToPath(path: String) {
         val newPath = relToAbsPath(path)
         router.handle(RouteContext.from(newPath, lastPath))
-        lastPath = path
+        lastPath = newPath
     }
 
     fun pushPath(path: String) {
         val newPath = relToAbsPath(path)
         window.history.pushState(null, newPath, newPath)
-        lastPath = path
+        lastPath = newPath
     }
 
     private fun relToAbsPath(path: String): String {
