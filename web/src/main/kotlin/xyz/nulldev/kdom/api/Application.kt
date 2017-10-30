@@ -23,8 +23,6 @@ abstract class Application {
             document.location?.let {
                 val path = it.pathname + it.search
                 silentGoToPath(path)
-                lastPath = path
-                null
             }
         }
     }
