@@ -12,6 +12,8 @@ abstract class Application {
 
     abstract val rootComponent: Component
 
+    var lastPath: String? = null
+
     fun attach(doc: Document) {
         doc.body!!.appendChild(rootComponent.compiledDom.root)
         rootComponent.checkAttached()
@@ -19,7 +21,10 @@ abstract class Application {
         //Attach history
         window.onpopstate = {
             document.location?.let {
-                silentGoToPath(it.pathname + it.search)
+                val path = it.pathname + it.search
+                silentGoToPath(path)
+                lastPath = path
+                null
             }
         }
     }
@@ -31,12 +36,14 @@ abstract class Application {
 
     fun silentGoToPath(path: String) {
         val newPath = relToAbsPath(path)
-        router.handle(RouteContext.from(newPath, window.location.href))
+        router.handle(RouteContext.from(newPath, lastPath))
+        lastPath = path
     }
 
     fun pushPath(path: String) {
         val newPath = relToAbsPath(path)
         window.history.pushState(null, newPath, newPath)
+        lastPath = path
     }
 
     private fun relToAbsPath(path: String): String {
