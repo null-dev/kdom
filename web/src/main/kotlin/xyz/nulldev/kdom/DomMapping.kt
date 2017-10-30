@@ -2,6 +2,8 @@ package xyz.nulldev.kdom
 
 import org.w3c.dom.*
 import xyz.nulldev.kdom.api.*
+import xyz.nulldev.kdom.api.util.checkAttached
+import xyz.nulldev.kdom.api.util.component
 import kotlin.browser.document
 
 sealed class DomMapping(val fields: List<Field<out Any>>) {
@@ -35,11 +37,13 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
     class ComponentMapping(private var node: Node,
                            private val field: Field<out Component>): DomMapping(listOf(field)) {
         override fun update() {
+            val nodeToDetach = node
             node.parentNode!!.replaceChild(field.value.compiledDom.root, node)
             node = field.value.compiledDom.root
 
-            //Fire onAttach listeners
+            //Fire attach listeners
             field.value.checkAttached()
+            (nodeToDetach as? HTMLElement)?.checkAttached()
         }
     }
     class NodeMapping(private var node: Node,
@@ -53,12 +57,20 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
                                private val list: ComponentList<out Component>):
             DomMapping(listOf(list.internalField)) {
         override fun update() {
+            //Clone old state
+            val clonedOldState = oldState.toList()
+
             //Replace old nodes
             oldState.replaceWith(list.map { it.compiledDom.root })
 
-            //Fire onAttach listeners
+            //Fire checkAttached listeners on new elements
             list.forEach {
                 it.checkAttached()
+            }
+
+            //Fire checkAttached listeners on old elements
+            clonedOldState.forEach {
+                (it as? HTMLElement)?.checkAttached()
             }
         }
     }
@@ -99,7 +111,16 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
                                       private val field: ReadOnlyField<CustomElementContent>):
             DomMapping(listOf(field)) {
         override fun update() {
+            //Clone old state
+            val clonedOldState = oldState.toList()
+
+            //Replace old state with new state
             oldState.replaceWith(field.value.childNodes)
+
+            //Fire checkAttached listeners on elements
+            (clonedOldState + field.value.childNodes).forEach {
+                (it as? HTMLElement)?.checkAttached()
+            }
         }
     }
 }

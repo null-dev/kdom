@@ -1,5 +1,7 @@
 package xyz.nulldev.kdom.examples.demo.pages
 
+import azadev.kotlin.css.*
+import azadev.kotlin.css.dimens.px
 import xyz.nulldev.kdom.api.Component
 import xyz.nulldev.kdom.examples.demo.DemoPage
 import kotlin.js.Math
@@ -10,15 +12,27 @@ class DynamicAttributesDemo:
     private val elevation = field(0)
     private val opacity = field(1f)
 
+    private val rootStyle = style {
+        paddingTop = 24.px
+        paddingLeft = 8.px
+        paddingRight = 8.px
+    }
+
+    private val opacityBoxStyle = style {
+        padding = 16.px
+        opacity = this@DynamicAttributesDemo.opacity // Yes, it is possible to use fields in styles
+        backgroundColor = RED
+    }
+
     //language=html
     override fun dom() = """
-        <div style="padding-top: 24px;padding-left:8px;padding-right:8px">
+        <div kstyle="$rootStyle">
             ${field(slider(0, 24) { elevation(it) })}
             <figure class="mdc-elevation--z$elevation" style="padding: 16px">
                 <figcaption>${elevation}dp (<code>mdc-elevation--z$elevation</code>)</figcaption>
             </figure>
             ${field(slider(0, 100, 100) { opacity(it / 100f) })}
-            <figure class="mdc-elevation--z8" style="padding: 16px;opacity:$opacity;background-color:red">
+            <figure class="mdc-elevation--z8" kstyle="$opacityBoxStyle">
                 <figcaption><b>Opacity: ${opacity.transform { "${Math.round(it * 100)}%" }}</b></figcaption>
             </figure>
         </div>

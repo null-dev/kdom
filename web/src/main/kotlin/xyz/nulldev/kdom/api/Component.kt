@@ -1,5 +1,6 @@
 package xyz.nulldev.kdom.api
 
+import azadev.kotlin.css.Stylesheet
 import kotlinx.html.Tag
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.Node
@@ -27,9 +28,16 @@ abstract class Component {
     @JsName("attachListener")
     open suspend fun onAttach() {}
 
+    /**
+     * Executed when the component is detached from the document
+     */
+    @JsName("detachListener")
+    open suspend fun onDetach() {}
+
     private val registeredFields = mutableMapOf<Long, Field<out Any>>()
     private val registeredElements = mutableMapOf<Long, Element<out HTMLElement>>()
     private val registeredLists = mutableMapOf<Long, ComponentList<out Component>>()
+    internal val associatedStyleElements = mutableMapOf<String, org.w3c.dom.Element>()
 
     /**
      * Whether or not this component has been compiled
@@ -47,8 +55,6 @@ abstract class Component {
 
     /**
      * Whether or not this component is attached to the document
-     *
-     * May return `true` if after the component has been detached from the document
      */
     val attached: Boolean
         get() {
@@ -81,16 +87,35 @@ abstract class Component {
         val newVal = findUltimateAncestor(compiledDom.root).asDynamic()?.body != null
 
         if(!internalAttached && newVal) {
-            internalAttached = newVal
+            attachStyles()
             async { onAttach() }
+        } else if(internalAttached && !newVal) {
+            detachStyles()
+            async { onDetach() }
         }
 
-        // Fire onAttach for all children
+        internalAttached = newVal
+
+        // Fire attach listeners for all children
         registeredFields.values.forEach {
             (it.value as? Component)?.checkAttached()
         }
         registeredLists.values.forEach {
             it.forEach(Component::checkAttached)
+        }
+    }
+
+    private fun attachStyles() {
+        associatedStyleElements.forEach {
+            document.head?.appendChild(it.value)
+                    ?: throw IllegalStateException("Document head not found!")
+        }
+    }
+
+    private fun detachStyles() {
+        associatedStyleElements.forEach {
+            document.head?.removeChild(it.value)
+                    ?: throw IllegalStateException("Document head not found!")
         }
     }
 
@@ -138,6 +163,12 @@ abstract class Component {
         import(clist)
         return clist
     }
+
+    /**
+     * Create an element style
+     */
+    protected open fun style(gen: Stylesheet.() -> Unit) = ElementStyle(gen)
+    protected open fun style(content: String) = ElementStyle(content)
 
     //Importing
 
@@ -235,7 +266,7 @@ abstract class Component {
     var Tag.kref: Element<*>
         get() = throw UnsupportedOperationException("This attribute can only be written to!")
         set(value) {
-            attributes.put(CompiledDom.ELEMENT_TRIGGER, value.toString())
+            attributes.put(CompiledDom.REFERENCE_ATTRIBUTE, value.toString())
         }
 
     companion object {

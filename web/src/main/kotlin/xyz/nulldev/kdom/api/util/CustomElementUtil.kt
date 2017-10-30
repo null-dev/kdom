@@ -47,3 +47,11 @@ fun <T : Component> HTMLElement.component(): T {
 fun <T : Component> Element<*>.component(): T {
     return value.component()
 }
+
+/**
+ * Fire checkAttached listener for an HTMLElement if it is a component
+ */
+
+fun HTMLElement.checkAttached() = try {
+    component<Component>().checkAttached()
+} catch(e: IllegalArgumentException) {}

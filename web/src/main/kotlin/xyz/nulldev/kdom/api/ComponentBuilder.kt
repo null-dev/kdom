@@ -13,6 +13,11 @@ abstract class ComponentBuilder: Component() {
      */
     var onAttach: suspend () -> Unit = {}
 
+    /**
+     * @see Component.onDetach
+     */
+    var onDetach: suspend () -> Unit = {}
+
     override suspend fun onCompile() {
         //Hack to reference onCompile function reference
         onCompile.apply { this() }
@@ -21,6 +26,11 @@ abstract class ComponentBuilder: Component() {
     override suspend fun onAttach() {
         //Hack to reference onAttach function reference
         onAttach.apply { this() }
+    }
+
+    override suspend fun onDetach() {
+        //Hack to reference onDetach function reference
+        onDetach.apply { this() }
     }
 
     //Expose protected methods

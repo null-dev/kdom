@@ -11,7 +11,8 @@ import kotlin.dom.clear
 class CompiledDom(val root: HTMLElement,
                   val mappings: List<DomMapping>) {
     companion object {
-        const val ELEMENT_TRIGGER = "kref"
+        const val REFERENCE_ATTRIBUTE = "kref"
+        const val STYLE_ATTRIBUTE = "kstyle"
 
         fun fromHtml(html: HTMLElement,
                      fields: List<Field<out Any>>,
@@ -76,40 +77,63 @@ class CompiledDom(val root: HTMLElement,
                 element.attributes.asList()
                         .toList() //Clone attributes list as we will be making changes
                         .forEach {
-                    if(it.name == ELEMENT_TRIGGER) {
-                        //Map elements
-                        val mapping = elementStringMappings[it.value]
-                                ?: throw IllegalStateException("Invalid kref value found: ${it.value}")
+                            if(it.name == REFERENCE_ATTRIBUTE) {
+                                //Map elements
+                                val mapping = elementStringMappings[it.value]
+                                        ?: throw IllegalStateException("Invalid kref value found: ${it.value}")
 
-                        if(custom == null)
-                            mapping.setVal(element.asDynamic())
-                        else
-                            customElementReference = mapping
+                                if(custom == null)
+                                    mapping.setVal(element.asDynamic())
+                                else
+                                    customElementReference = mapping
 
-                        //Remove reference attribute
-                        element.removeAttributeNode(it)
-                    } else {
-                        val res = chunkify(it.value)
-                        if(custom != null) {
-                            //Custom element attribute mapping
-                            val customField: ReadOnlyField<String>
+                                //Remove reference attribute
+                                element.removeAttributeNode(it)
+                            } else if(it.name == STYLE_ATTRIBUTE) {
+                                val res = chunkify(it.value)
 
-                            if(res.first) {
-                                //Dynamic mapping
-                                customField = ReadOnlyField(Component.nextId(), "")
-                                mappings += DomMapping.FieldMapping(customField, res.second)
+                                val nodes = res.second.map {
+                                    when (it) {
+                                        is TextChunk.Text -> document.createTextNode(it.value)
+                                        is TextChunk.Field -> {
+                                            val node = document.createTextNode("")
+                                            mappings += DomMapping.TextMapping(node, it.field)
+                                            node
+                                        }
+                                    }
+                                }
+
+                                // Inject and add style to element
+                                val createdStyle = StyleManager.createStyle(nodes)
+                                element.classList.add(createdStyle.first)
+
+                                //Associate style with component
+                                component.associatedStyleElements += createdStyle
+
+                                //Remove reference attribute
+                                element.removeAttributeNode(it)
                             } else {
-                                //Static mapping
-                                customField = ReadOnlyField(Component.nextId(), it.value)
-                            }
+                                val res = chunkify(it.value)
+                                if(custom != null) {
+                                    //Custom element attribute mapping
+                                    val customField: ReadOnlyField<String>
 
-                            customAttributes.put(it.name, customField)
-                        } else {
-                            //Normal element attribute mapping
-                            if (res.first)
-                                mappings += DomMapping.AttributeMapping(it, res.second)
-                        }
-                    }
+                                    if(res.first) {
+                                        //Dynamic mapping
+                                        customField = ReadOnlyField(Component.nextId(), "")
+                                        mappings += DomMapping.FieldMapping(customField, res.second)
+                                    } else {
+                                        //Static mapping
+                                        customField = ReadOnlyField(Component.nextId(), it.value)
+                                    }
+
+                                    customAttributes.put(it.name, customField)
+                                } else {
+                                    //Normal element attribute mapping
+                                    if (res.first)
+                                        mappings += DomMapping.AttributeMapping(it, res.second)
+                                }
+                            }
                         }
 
                 //Analyze current element for text mappings
