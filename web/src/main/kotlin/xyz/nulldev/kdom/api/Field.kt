@@ -4,9 +4,12 @@ import xyz.nulldev.kdom.util.HUGE_STRING
 
 open class Field<T : Any> internal constructor(val id: Long, initialVal: T):
         ValueStore<T>, Updatable {
-    override var value = initialVal
+    internal var internalValue = initialVal
+
+    override var value
+        get() = internalValue
         set(value) {
-            field = value
+            internalValue = value
             update()
         }
 

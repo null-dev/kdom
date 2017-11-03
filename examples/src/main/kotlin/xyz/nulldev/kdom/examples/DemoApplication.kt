@@ -13,6 +13,7 @@ object DemoApplication : Application() {
             "/lists" to { ListDemo() },
             "/custom-elements" to { CustomElementDemo() },
             "/calling-custom-element-functions" to { CallingCustomElementFunctions() },
+            "/mdcshim-demo" to { MDCShimDemo() },
             "/stack-based-routing/" to { StackBasedRoutingDemo() }
     ))
 

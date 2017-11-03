@@ -224,19 +224,29 @@ abstract class Component {
     val compiledDom: CompiledDom
         get() {
             if(realCompiledDom == null) {
-                realCompiledDom = CompiledDom.fromHtml(dom(),
-                        registeredFields.values.toList(),
-                        registeredElements.values.toList(),
-                        registeredLists.values.toList(),
-                        this)
-
-                //Register compiled DOM
-                realCompiledDom!!.root.asDynamic()[COMPONENT_KEY] = this
-
-                compiled = true
+                silentlyCompile()
+                triggerCompileEvents()
             }
             return realCompiledDom!!
         }
+
+    internal fun silentlyCompile() {
+        if(realCompiledDom == null) {
+            realCompiledDom = CompiledDom.fromHtml(dom(),
+                    registeredFields.values.toList(),
+                    registeredElements.values.toList(),
+                    registeredLists.values.toList(),
+                    this)
+
+            //Register compiled DOM
+            realCompiledDom!!.root.asDynamic()[COMPONENT_KEY] = this
+        }
+    }
+
+    internal fun triggerCompileEvents() {
+        if(!compiled)
+            compiled = true
+    }
 
     //Extension functions
     /**

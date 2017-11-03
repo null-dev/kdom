@@ -6,6 +6,8 @@ import org.w3c.dom.events.Event
 import org.w3c.dom.get
 import org.w3c.dom.set
 import xyz.nulldev.kdom.api.Component
+import xyz.nulldev.kdom.api.CustomElementRequest
+import xyz.nulldev.kdom.api.CustomElementSpec
 import xyz.nulldev.kdom.api.Element
 
 private const val DATA_VALUE_KEY = "value"
@@ -55,3 +57,9 @@ fun <T : Component> Element<*>.component(): T {
 fun HTMLElement.checkAttached() = try {
     component<Component>().checkAttached()
 } catch(e: IllegalArgumentException) {}
+
+/**
+ * Shortcut for creating a CustomElementSpec
+ */
+infix fun String.specTo(spec: (CustomElementRequest) -> Component)
+        = CustomElementSpec(this, spec)

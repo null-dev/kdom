@@ -1,6 +1,6 @@
 package xyz.nulldev.kdom.api
 
-class ReadOnlyField<T : Any>(id: Long, initialValue: T): Field<T>(id, initialValue) {
+open class ReadOnlyField<T : Any>(id: Long, initialValue: T): Field<T>(id, initialValue) {
     override var value: T
         get() = super.value
         set(value) {

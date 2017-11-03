@@ -18,7 +18,7 @@ abstract class StackBasedRoutableComponentField : RoutableComponent() {
     }
 
     class StackRouter(val parent: StackBasedRoutableComponentField,
-                      dsl: StackRouter.() -> Unit) : RouteHandler{
+                      dsl: StackRouter.() -> Unit) : RouteHandler {
         private val internalRouter = Router {}
         private val cachedComponents = mutableMapOf<String, Pair<Int, Component>>()
         private val nestedStackRouters = mutableListOf<StackRouter>()

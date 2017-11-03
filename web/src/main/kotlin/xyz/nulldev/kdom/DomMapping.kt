@@ -74,8 +74,8 @@ sealed class DomMapping(val fields: List<Field<out Any>>) {
             }
         }
     }
-    class AttributeMapping(private val attr: Attr,
-                           private val chunks: List<TextChunk>):
+    class AttributeMapping(internal val attr: Attr,
+                           internal val chunks: List<TextChunk>):
             DomMapping(chunks
                     .filterIsInstance<TextChunk.Field>()
                     .map(TextChunk.Field::field)) {

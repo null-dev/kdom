@@ -1,15 +1,19 @@
 package xyz.nulldev.kdom
 
-import org.w3c.dom.HTMLElement
-import org.w3c.dom.Node
-import org.w3c.dom.Text
-import org.w3c.dom.asList
+import kotlinx.html.dom.create
+import org.w3c.dom.*
 import xyz.nulldev.kdom.api.*
+import xyz.nulldev.kdom.api.Element
 import kotlin.browser.document
 import kotlin.dom.clear
 
 class CompiledDom(val root: HTMLElement,
-                  val mappings: List<DomMapping>) {
+                  mappings: List<DomMapping>) {
+
+    private val internalMappings = mappings.toMutableList()
+    //Expose mappings as immutable list
+    val mappings: List<DomMapping> = internalMappings
+
     companion object {
         const val REFERENCE_ATTRIBUTE = "kref"
         const val STYLE_ATTRIBUTE = "kstyle"
@@ -31,8 +35,12 @@ class CompiledDom(val root: HTMLElement,
                 fieldStringMappings.forEach { (k, v) ->
                     do {
                         var done = true
-                        curChunks.filterIsInstance<TextChunk.Text>()
-                                .forEachIndexed { index, textChunk ->
+                        curChunks.mapIndexed { index, chunk -> Pair(index, chunk) }
+                                .filter { it.second is TextChunk.Text }
+                                .forEach { (index, textChunk) ->
+                                    //Manually confirm that textChunk is TextChunk.Text (as we can't use filterIsInstance)
+                                    textChunk as TextChunk.Text
+
                                     val ti = textChunk.value.indexOf(k)
 
                                     if (ti >= 0) {
@@ -73,6 +81,8 @@ class CompiledDom(val root: HTMLElement,
                 val customAttributes = mutableMapOf<String, ReadOnlyField<String>>()
                 var customElementReference: Element<*>? = null
 
+                val classesToAppend = mutableListOf<String>()
+
                 //Analyze current element for attribute mappings
                 element.attributes.asList()
                         .toList() //Clone attributes list as we will be making changes
@@ -105,7 +115,7 @@ class CompiledDom(val root: HTMLElement,
 
                                 // Inject and add style to element
                                 val createdStyle = StyleManager.createStyle(nodes)
-                                element.classList.add(createdStyle.first)
+                                classesToAppend += createdStyle.first
 
                                 //Associate style with component
                                 component.associatedStyleElements += createdStyle
@@ -127,7 +137,7 @@ class CompiledDom(val root: HTMLElement,
                                         customField = ReadOnlyField(Component.nextId(), it.value)
                                     }
 
-                                    customAttributes.put(it.name, customField)
+                                    customAttributes.put(it.name.toLowerCase(), customField)
                                 } else {
                                     //Normal element attribute mapping
                                     if (res.first)
@@ -135,6 +145,31 @@ class CompiledDom(val root: HTMLElement,
                                 }
                             }
                         }
+
+                //Append classes
+                val newClassString = classesToAppend.joinToString(" ")
+                //Find and replace mapping
+                val elementAttribute = element.getAttributeNode("class") ?: document.createAttribute("class")
+                val classAttrMapping = mappings.filterIsInstance<DomMapping.AttributeMapping>().find {
+                    it.attr == elementAttribute
+                }
+                if(classAttrMapping != null) {
+                    // Remove old mapping
+                    mappings.remove(classAttrMapping)
+                    mappings += DomMapping.AttributeMapping(elementAttribute,
+                            classAttrMapping.chunks + TextChunk.Text(" " + newClassString))
+                }
+                //Set original attribute
+                elementAttribute.value += " " + newClassString
+                //Change custom element mappings
+                if(custom != null) {
+                    //Find and transform original field or create new mapping
+                    val new = customAttributes["class"]?.transform {
+                        it + " " + newClassString
+                    } ?: ReadOnlyField(Component.nextId(), newClassString)
+                    //Apply change
+                    customAttributes["class"] = new
+                }
 
                 //Analyze current element for text mappings
                 val newChildNodes = mutableListOf<Node>()
@@ -199,9 +234,69 @@ class CompiledDom(val root: HTMLElement,
                     //Import content
                     generated.internalImportRelay(content)
 
-                    //Update root element
+                    //Update root element parent
                     root.parent = generated
+
+                    //Silently compile DOM
+                    generated.silentlyCompile()
                     root.setVal(generated.compiledDom.root)
+
+                    //Merge attributes
+                    val toUpdate = mutableListOf<DomMapping>()
+                    fun appendToAttr(attr: String, chunks: List<TextChunk>) {
+                        //Find old mappings in generated component
+                        val mapping = generated.compiledDom.mappings.filterIsInstance<DomMapping.AttributeMapping>().find {
+                            it.attr.name.equals(attr, true)
+                        }?.apply {
+                            //Remove old mapping
+                            generated.compiledDom.internalMappings.remove(this)
+                        }
+
+                        //Assemble new chunks (use attribute values in HTML if not in mappings)
+                        val newChunks = (mapping?.chunks ?: listOf(TextChunk.Text(root.value.getAttribute(attr) ?: ""))) + chunks
+
+                        //Create new attribute node
+                        val attrNode = document.createAttribute(attr)
+                        root.value.setAttributeNode(attrNode)
+
+                        //Add new mappings
+                        val newMapping = DomMapping.AttributeMapping(attrNode, newChunks)
+                        generated.compiledDom.internalMappings += newMapping
+                        toUpdate += newMapping
+                    }
+                    customAttributes.forEach { (name, value) ->
+                        when(name.toLowerCase()) {
+                            "id" -> {
+                                //Check if ID already set!
+                                if(root.value.hasAttribute("id")) {
+                                    console.warn("Could not merge id attribute! The custom element's tag contains an ID attribute but the custom element's root element also contains an ID attribute!")
+                                } else {
+                                    //Add new ID mapping
+                                    val idAttr = document.createAttribute("id")
+                                    val newMapping = DomMapping.AttributeMapping(idAttr,
+                                            listOf(TextChunk.Field(generated.internalImportRelay(value))))
+                                    generated.compiledDom.internalMappings += newMapping
+                                    toUpdate += newMapping
+                                }
+                            }
+                            "class" -> {
+                                appendToAttr("class", listOf(
+                                        TextChunk.Text(" "),
+                                        TextChunk.Field(generated.internalImportRelay(value))
+                                ))
+                            }
+                            "style" -> {
+                                appendToAttr("style", listOf(
+                                        TextChunk.Text(";"),
+                                        TextChunk.Field(generated.internalImportRelay(value))
+                                ))
+                            }
+                        }
+                    }
+                    toUpdate.forEach { it.update() }
+
+                    //Trigger compile events
+                    generated.triggerCompileEvents()
 
                     //Update element reference
                     customElementReference?.setVal(generated.compiledDom.root.asDynamic())
