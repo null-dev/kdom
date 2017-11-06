@@ -38,8 +38,14 @@ abstract class StackBasedRoutableComponentField : RoutableComponent() {
                 }
                 res?.let { comp ->
                     it.addTag(FINAL_PATH_SIZE_TAG, it.currentPath.size)
-                    it.finish() // Finish route
+
+                    //Set component
                     parent.routedComponent(comp)
+
+                    //Delegate path handling to component
+                    (comp as? RoutableComponent)?.handle(it)
+
+                    it.finish() // Finish route
                 }
             })
         }
