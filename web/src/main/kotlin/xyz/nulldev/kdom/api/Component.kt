@@ -273,6 +273,15 @@ abstract class Component {
             attributes.put(CompiledDom.REFERENCE_ATTRIBUTE, value.toString())
         }
 
+    /**
+     * KotlinX HTML alias to the kstyle attribute
+     */
+    var Tag.kstyle: ElementStyle
+        get() = throw UnsupportedOperationException("This attribute can only be written to!")
+        set(value) {
+            attributes.put(CompiledDom.STYLE_ATTRIBUTE, value.toString())
+        }
+
     companion object {
         internal val COMPONENT_KEY = "${HUGE_STRING}_COMPONENT"
         private var lastId = 0L

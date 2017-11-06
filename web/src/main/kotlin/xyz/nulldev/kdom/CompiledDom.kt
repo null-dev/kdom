@@ -170,6 +170,8 @@ class CompiledDom(val root: HTMLElement,
                     //Apply change
                     customAttributes["class"] = new
                 }
+                //Ensure attribute is attached to element
+                element.setAttributeNode(elementAttribute)
 
                 //Analyze current element for text mappings
                 val newChildNodes = mutableListOf<Node>()
