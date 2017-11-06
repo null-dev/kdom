@@ -9,17 +9,9 @@ object StyleManager {
     var lastId = 0
 
     fun nextIdClass()
-        = "kdom-${HUGE_STRING}-${lastId++}"
+        = "kdom-${HUGE_STRING}-kstyle-${lastId++}"
 
-    fun createStyle(nodes: List<Text>): Pair<String, Element> {
-        val clazz = nextIdClass()
-        // Encapsulate nodes
-        nodes.first().let {
-            it.textContent = ".$clazz{" + it.textContent
-        }
-        nodes.last().let {
-            it.textContent += "}"
-        }
+    fun createStyle(clazz: String, nodes: List<Text>): Pair<String, Element> {
         val styleElement = document.createElement("style")
         // Append style nodes to element
         nodes.forEach {

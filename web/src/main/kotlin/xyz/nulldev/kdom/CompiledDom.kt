@@ -100,7 +100,9 @@ class CompiledDom(val root: HTMLElement,
                                 //Remove reference attribute
                                 element.removeAttributeNode(it)
                             } else if(it.name == STYLE_ATTRIBUTE) {
-                                val res = chunkify(it.value)
+                                val clazz = StyleManager.nextIdClass()
+                                val newVal = it.value.replaceFirst(ElementStyle.PLACEHOLDER_STYLE_CLASS, clazz)
+                                val res = chunkify(newVal)
 
                                 val nodes = res.second.map {
                                     when (it) {
@@ -114,7 +116,7 @@ class CompiledDom(val root: HTMLElement,
                                 }
 
                                 // Inject and add style to element
-                                val createdStyle = StyleManager.createStyle(nodes)
+                                val createdStyle = StyleManager.createStyle(clazz, nodes)
                                 classesToAppend += createdStyle.first
 
                                 //Associate style with component
@@ -147,31 +149,33 @@ class CompiledDom(val root: HTMLElement,
                         }
 
                 //Append classes
-                val newClassString = classesToAppend.joinToString(" ")
-                //Find and replace mapping
-                val elementAttribute = element.getAttributeNode("class") ?: document.createAttribute("class")
-                val classAttrMapping = mappings.filterIsInstance<DomMapping.AttributeMapping>().find {
-                    it.attr == elementAttribute
+                if(classesToAppend.isNotEmpty()) {
+                    val newClassString = classesToAppend.joinToString(" ")
+                    //Find and replace mapping
+                    val elementAttribute = element.getAttributeNode("class") ?: document.createAttribute("class")
+                    val classAttrMapping = mappings.filterIsInstance<DomMapping.AttributeMapping>().find {
+                        it.attr == elementAttribute
+                    }
+                    if (classAttrMapping != null) {
+                        // Remove old mapping
+                        mappings.remove(classAttrMapping)
+                        mappings += DomMapping.AttributeMapping(elementAttribute,
+                                classAttrMapping.chunks + TextChunk.Text(" " + newClassString))
+                    }
+                    //Set original attribute
+                    elementAttribute.value += " " + newClassString
+                    //Change custom element mappings
+                    if (custom != null) {
+                        //Find and transform original field or create new mapping
+                        val new = customAttributes["class"]?.transform {
+                            it + " " + newClassString
+                        } ?: ReadOnlyField(Component.nextId(), newClassString)
+                        //Apply change
+                        customAttributes["class"] = new
+                    }
+                    //Ensure attribute is attached to element
+                    element.setAttributeNode(elementAttribute)
                 }
-                if(classAttrMapping != null) {
-                    // Remove old mapping
-                    mappings.remove(classAttrMapping)
-                    mappings += DomMapping.AttributeMapping(elementAttribute,
-                            classAttrMapping.chunks + TextChunk.Text(" " + newClassString))
-                }
-                //Set original attribute
-                elementAttribute.value += " " + newClassString
-                //Change custom element mappings
-                if(custom != null) {
-                    //Find and transform original field or create new mapping
-                    val new = customAttributes["class"]?.transform {
-                        it + " " + newClassString
-                    } ?: ReadOnlyField(Component.nextId(), newClassString)
-                    //Apply change
-                    customAttributes["class"] = new
-                }
-                //Ensure attribute is attached to element
-                element.setAttributeNode(elementAttribute)
 
                 //Analyze current element for text mappings
                 val newChildNodes = mutableListOf<Node>()
