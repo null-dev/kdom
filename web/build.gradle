@@ -1,5 +1,5 @@
 group 'xyz.nulldev.kdom-web'
-version "1.61"
+version "1.62"
 
 apply plugin: 'kotlin2js'
 apply plugin: 'maven-publish'

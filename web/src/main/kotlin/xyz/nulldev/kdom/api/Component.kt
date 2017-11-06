@@ -164,12 +164,6 @@ abstract class Component {
         return clist
     }
 
-    /**
-     * Create an element style
-     */
-    protected open fun style(gen: Stylesheet.() -> Unit) = ElementStyle(gen)
-    protected open fun style(content: String) = ElementStyle(content)
-
     //Importing
 
     /**
@@ -296,3 +290,9 @@ abstract class Component {
         }
     }
 }
+
+/**
+ * Create an element style
+ */
+fun style(gen: Stylesheet.() -> Unit) = ElementStyle(gen)
+fun style(content: String) = ElementStyle(content)
