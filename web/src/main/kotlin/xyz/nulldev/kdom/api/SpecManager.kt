@@ -8,6 +8,9 @@ object SpecManager {
         registeredSpecs.put(cleanTagName(spec.tagName), spec)
     }
 
+    fun registerFactory(factory: CustomElementSpecFactory)
+        = registerSpec(factory.spec)
+
     internal fun specFor(tagName: String) = registeredSpecs[cleanTagName(tagName)]
 
     private fun cleanTagName(tagName: String) = tagName.trim().toLowerCase()
