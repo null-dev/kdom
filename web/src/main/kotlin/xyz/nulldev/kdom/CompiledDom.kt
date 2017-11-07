@@ -101,7 +101,7 @@ class CompiledDom(val root: HTMLElement,
                                 element.removeAttributeNode(it)
                             } else if(it.name == STYLE_ATTRIBUTE) {
                                 val clazz = StyleManager.nextIdClass()
-                                val newVal = it.value.replaceFirst(ElementStyle.PLACEHOLDER_STYLE_CLASS, clazz)
+                                val newVal = it.value.replace(ElementStyle.PLACEHOLDER_STYLE_CLASS, clazz)
                                 val res = chunkify(newVal)
 
                                 val nodes = res.second.map {

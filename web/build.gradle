@@ -1,5 +1,5 @@
 group 'xyz.nulldev.kdom-web'
-version "1.64"
+version "1.65"
 
 apply plugin: 'kotlin2js'
 apply plugin: 'maven-publish'
@@ -13,7 +13,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-html-js:0.6.4"
-    compile "xyz.nulldev:aza-kotlin-css-js:1.01"
+    compile "xyz.nulldev:aza-kotlin-css-js:1.02"
 }
 
 compileKotlin2Js {
