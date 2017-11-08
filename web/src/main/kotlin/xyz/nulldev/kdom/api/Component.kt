@@ -5,6 +5,7 @@ import kotlinx.html.Tag
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.Node
 import xyz.nulldev.kdom.CompiledDom
+import xyz.nulldev.kdom.StyleManager
 import xyz.nulldev.kdom.api.util.async
 import xyz.nulldev.kdom.util.HUGE_STRING
 import kotlin.browser.document
@@ -37,7 +38,8 @@ abstract class Component {
     private val registeredFields = mutableMapOf<Long, Field<out Any>>()
     private val registeredElements = mutableMapOf<Long, Element<out HTMLElement>>()
     private val registeredLists = mutableMapOf<Long, ComponentList<out Component>>()
-    internal val associatedStyleElements = mutableMapOf<String, org.w3c.dom.Element>()
+    internal var associatedStyleElement: org.w3c.dom.Element? = null
+    internal var associatedStyleReference: String? = null
 
     /**
      * Whether or not this component has been compiled
@@ -106,16 +108,23 @@ abstract class Component {
     }
 
     private fun attachStyles() {
-        associatedStyleElements.forEach {
-            document.head?.appendChild(it.value)
+        associatedStyleElement?.let {
+            document.head?.appendChild(it)
                     ?: throw IllegalStateException("Document head not found!")
+        }
+        associatedStyleReference?.let {
+            val clazz = StyleManager.attachStyle(it)
+            compiledDom.root.setAttribute(ElementStyle.PLACEHOLDER_STYLE_KEY, clazz)
         }
     }
 
     private fun detachStyles() {
-        associatedStyleElements.forEach {
-            document.head?.removeChild(it.value)
+        associatedStyleElement?.let {
+            document.head?.removeChild(it)
                     ?: throw IllegalStateException("Document head not found!")
+        }
+        associatedStyleReference?.let {
+            StyleManager.detachStyle(it)
         }
     }
 

@@ -11,6 +11,7 @@ object DemoApplication : Application() {
             "/hello-world" to { HelloWorld() },
             "/dynamic-attributes" to { DynamicAttributesDemo() },
             "/lists" to { ListDemo() },
+            "/styled-lists" to { StyledListDemo() },
             "/custom-elements" to { CustomElementDemo() },
             "/calling-custom-element-functions" to { CallingCustomElementFunctions() },
             "/mdcshim-demo" to { MDCShimDemo() },

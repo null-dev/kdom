@@ -3,6 +3,7 @@ package xyz.nulldev.kdom.examples.demo.pages
 import azadev.kotlin.css.*
 import azadev.kotlin.css.dimens.px
 import xyz.nulldev.kdom.api.Component
+import xyz.nulldev.kdom.api.style
 import xyz.nulldev.kdom.examples.demo.DemoPage
 import kotlin.js.Math
 

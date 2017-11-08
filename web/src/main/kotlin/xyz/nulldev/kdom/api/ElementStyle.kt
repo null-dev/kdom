@@ -14,7 +14,7 @@ class ElementStyle(content: String) {
     constructor(gen: Stylesheet.() -> Unit):
             this(
                     Stylesheet {
-                        c(PLACEHOLDER_STYLE_CLASS) {
+                        any.attr("$PLACEHOLDER_STYLE_KEY=$PLACEHOLDER_STYLE_VALUE") {
                             gen(this)
                         }
                     }.render()
@@ -23,6 +23,7 @@ class ElementStyle(content: String) {
     override fun toString() = generated
 
     companion object {
-        internal val PLACEHOLDER_STYLE_CLASS = "kdom-$HUGE_STRING-placeholder-style-class"
+        internal val PLACEHOLDER_STYLE_KEY = "kdom-$HUGE_STRING-kstyle"
+        internal val PLACEHOLDER_STYLE_VALUE = "kdom-$HUGE_STRING-placeholder-style"
     }
 }
