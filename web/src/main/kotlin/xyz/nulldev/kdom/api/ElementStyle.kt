@@ -23,7 +23,7 @@ class ElementStyle(content: String) {
     override fun toString() = generated
 
     companion object {
-        internal val PLACEHOLDER_STYLE_KEY = "kdom-$HUGE_STRING-kstyle"
+        internal val PLACEHOLDER_STYLE_KEY = "data-kdom-$HUGE_STRING-kstyle"
         internal val PLACEHOLDER_STYLE_VALUE = "kdom-$HUGE_STRING-placeholder-style"
     }
 }
