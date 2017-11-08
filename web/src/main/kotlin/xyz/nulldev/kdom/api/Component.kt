@@ -38,8 +38,8 @@ abstract class Component {
     private val registeredFields = mutableMapOf<Long, Field<out Any>>()
     private val registeredElements = mutableMapOf<Long, Element<out HTMLElement>>()
     private val registeredLists = mutableMapOf<Long, ComponentList<out Component>>()
-    internal var associatedStyleElement: org.w3c.dom.Element? = null
-    internal var associatedStyleReference: String? = null
+    internal val associatedStyleElements = mutableListOf<org.w3c.dom.Element>()
+    internal val associatedStyleReferences = mutableListOf<Pair<HTMLElement, String>>()
 
     /**
      * Whether or not this component has been compiled
@@ -108,23 +108,23 @@ abstract class Component {
     }
 
     private fun attachStyles() {
-        associatedStyleElement?.let {
+        associatedStyleElements.forEach {
             document.head?.appendChild(it)
                     ?: throw IllegalStateException("Document head not found!")
         }
-        associatedStyleReference?.let {
-            val clazz = StyleManager.attachStyle(it)
-            compiledDom.root.setAttribute(ElementStyle.PLACEHOLDER_STYLE_KEY, clazz)
+        associatedStyleReferences.forEach {
+            val clazz = StyleManager.attachStyle(it.second)
+            it.first.setAttribute(ElementStyle.PLACEHOLDER_STYLE_KEY, clazz)
         }
     }
 
     private fun detachStyles() {
-        associatedStyleElement?.let {
+        associatedStyleElements.forEach {
             document.head?.removeChild(it)
                     ?: throw IllegalStateException("Document head not found!")
         }
-        associatedStyleReference?.let {
-            StyleManager.detachStyle(it)
+        associatedStyleReferences.forEach {
+            StyleManager.detachStyle(it.second)
         }
     }
 

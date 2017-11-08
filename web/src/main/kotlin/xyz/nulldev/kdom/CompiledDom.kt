@@ -79,6 +79,7 @@ class CompiledDom(val root: HTMLElement,
                 val custom = SpecManager.specFor(element.tagName)
                 val customAttributes = mutableMapOf<String, ReadOnlyField<String>>()
                 var customElementReference: Element<*>? = null
+                var queuedStyleReference: String? = null
 
                 //Analyze current element for attribute mappings
                 element.attributes.asList()
@@ -124,10 +125,13 @@ class CompiledDom(val root: HTMLElement,
                                     }
 
                                     //Associate style with component
-                                    component.associatedStyleElement = createdStyle.second
+                                    component.associatedStyleElements += createdStyle.second
                                 } else {
                                     //Associate style with component
-                                    component.associatedStyleReference = it.value
+                                    if(custom != null)
+                                        queuedStyleReference = it.value
+                                    else
+                                        component.associatedStyleReferences += element to it.value
                                 }
 
                                 //Remove reference attribute
@@ -225,6 +229,11 @@ class CompiledDom(val root: HTMLElement,
                     //Silently compile DOM
                     generated.silentlyCompile()
                     root.setVal(generated.compiledDom.root)
+
+                    //Merge kstyle
+                    queuedStyleReference?.let {
+                        component.associatedStyleReferences += root() to it
+                    }
 
                     //Merge attributes
                     val toUpdate = mutableListOf<DomMapping>()
