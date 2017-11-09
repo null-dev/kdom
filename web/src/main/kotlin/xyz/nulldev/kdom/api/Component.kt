@@ -114,7 +114,7 @@ abstract class Component {
         }
         associatedStyleReferences.forEach {
             val clazz = StyleManager.attachStyle(it.second)
-            it.first.setAttribute(ElementStyle.PLACEHOLDER_STYLE_KEY, clazz)
+            ElementStyle.appendStyleEntry(it.first, clazz)
         }
     }
 
@@ -124,7 +124,8 @@ abstract class Component {
                     ?: throw IllegalStateException("Document head not found!")
         }
         associatedStyleReferences.forEach {
-            StyleManager.detachStyle(it.second)
+            val clazz = StyleManager.detachStyle(it.second)
+            ElementStyle.removeStyleEntry(it.first, clazz)
         }
     }
 

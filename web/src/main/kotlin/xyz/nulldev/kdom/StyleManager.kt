@@ -42,7 +42,7 @@ object StyleManager {
         }
     }
 
-    fun detachStyle(style: String) {
+    fun detachStyle(style: String): String {
         val orig = styleRefs[style]
                 ?: throw IllegalStateException("An attempt was made to detach a style that was not attached!")
 
@@ -51,6 +51,8 @@ object StyleManager {
             styleRefs -= style
             orig.element.remove()
         }
+
+        return orig.clazz
     }
 }
 

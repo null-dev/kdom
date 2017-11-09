@@ -1,6 +1,7 @@
 package xyz.nulldev.kdom.api
 
 import azadev.kotlin.css.Stylesheet
+import org.w3c.dom.HTMLElement
 import xyz.nulldev.kdom.util.HUGE_STRING
 
 class ElementStyle(content: String) {
@@ -14,7 +15,7 @@ class ElementStyle(content: String) {
     constructor(gen: Stylesheet.() -> Unit):
             this(
                     Stylesheet {
-                        any.attr("$PLACEHOLDER_STYLE_KEY=$PLACEHOLDER_STYLE_VALUE") {
+                        attr("$PLACEHOLDER_STYLE_KEY~=$PLACEHOLDER_STYLE_VALUE") {
                             gen(this)
                         }
                     }.render()
@@ -25,5 +26,18 @@ class ElementStyle(content: String) {
     companion object {
         internal val PLACEHOLDER_STYLE_KEY = "data-kdom-$HUGE_STRING-kstyle"
         internal val PLACEHOLDER_STYLE_VALUE = "kdom-$HUGE_STRING-placeholder-style"
+
+        fun splitStyleString(string: String) = string.split(" ").filterNot(String::isBlank)
+        fun joinStyleString(string: List<String>) = string.joinToString(separator = " ")
+        fun appendStyleEntry(element: HTMLElement, entry: String) = element.setAttribute(PLACEHOLDER_STYLE_KEY,
+                joinStyleString(
+                        splitStyleString(element.getAttribute(PLACEHOLDER_STYLE_KEY) ?: "") + entry
+                )
+        )
+        fun removeStyleEntry(element: HTMLElement, entry: String) = element.setAttribute(PLACEHOLDER_STYLE_KEY,
+                joinStyleString(
+                        splitStyleString(element.getAttribute(PLACEHOLDER_STYLE_KEY) ?: "") - entry
+                )
+        )
     }
 }

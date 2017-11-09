@@ -120,8 +120,7 @@ class CompiledDom(val root: HTMLElement,
                                         customAttributes.put(ElementStyle.PLACEHOLDER_STYLE_KEY,
                                                 ReadOnlyField(Component.nextId(), clazz))
                                     } else {
-                                        element.setAttribute(ElementStyle.PLACEHOLDER_STYLE_KEY,
-                                                clazz)
+                                        ElementStyle.appendStyleEntry(element, clazz)
                                     }
 
                                     //Associate style with component
@@ -282,6 +281,12 @@ class CompiledDom(val root: HTMLElement,
                             "style" -> {
                                 appendToAttr("style", listOf(
                                         TextChunk.Text(";"),
+                                        TextChunk.Field(generated.internalImportRelay(value))
+                                ))
+                            }
+                            ElementStyle.PLACEHOLDER_STYLE_KEY -> {
+                                appendToAttr(ElementStyle.PLACEHOLDER_STYLE_KEY, listOf(
+                                        TextChunk.Text(" "),
                                         TextChunk.Field(generated.internalImportRelay(value))
                                 ))
                             }

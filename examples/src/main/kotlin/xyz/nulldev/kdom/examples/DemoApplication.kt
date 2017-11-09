@@ -15,7 +15,8 @@ object DemoApplication : Application() {
             "/custom-elements" to { CustomElementDemo() },
             "/calling-custom-element-functions" to { CallingCustomElementFunctions() },
             "/mdcshim-demo" to { MDCShimDemo() },
-            "/stack-based-routing/" to { StackBasedRoutingDemo() }
+            "/stack-based-routing/" to { StackBasedRoutingDemo() },
+            "/complex-elements-tests" to { ComplexElementsTests() }
     ))
 
     override val router = demoRoot
