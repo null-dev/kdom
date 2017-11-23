@@ -1,5 +1,10 @@
 package xyz.nulldev.kdom.api
 
+import xyz.nulldev.kdom.api.compat.KTableSpec
+import xyz.nulldev.kdom.api.compat.KTdSpec
+import xyz.nulldev.kdom.api.compat.KThSpec
+import xyz.nulldev.kdom.api.compat.KTrSpec
+
 object SpecManager {
     private val registeredSpecs = mutableMapOf<String, CustomElementSpec>()
 
@@ -14,4 +19,14 @@ object SpecManager {
     internal fun specFor(tagName: String) = registeredSpecs[cleanTagName(tagName)]
 
     private fun cleanTagName(tagName: String) = tagName.trim().toLowerCase()
+
+    init {
+        //Register internal specs
+        listOf(
+                KTableSpec,
+                KTrSpec,
+                KTdSpec,
+                KThSpec
+        ).forEach { registerFactory(it) }
+    }
 }

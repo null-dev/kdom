@@ -6,6 +6,10 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.Node
 import xyz.nulldev.kdom.CompiledDom
 import xyz.nulldev.kdom.StyleManager
+import xyz.nulldev.kdom.api.compat.KTableSpec
+import xyz.nulldev.kdom.api.compat.KTdSpec
+import xyz.nulldev.kdom.api.compat.KThSpec
+import xyz.nulldev.kdom.api.compat.KTrSpec
 import xyz.nulldev.kdom.api.util.async
 import xyz.nulldev.kdom.util.HUGE_STRING
 import kotlin.browser.document
@@ -269,8 +273,14 @@ abstract class Component {
         val out = t.asDynamic().content.cloneNode(true).children
         if(out.length > 1)
             throw IllegalArgumentException("Components that contain multiple elements must be wrapped in a parent element!")
-        if(out[0].tagName.includes("-"))
-            throw IllegalArgumentException("Components that contain a single custom element must be wrapped in a parent element!")
+
+        when(out[0].tagName.toLowerCase()) {
+            //Special case built in custom components
+            KTrSpec.tag, KTableSpec.tag, KTdSpec.tag, KThSpec.tag -> {}
+            else -> if(out[0].tagName.includes("-"))
+                throw IllegalArgumentException("Components that contain a single custom element must be wrapped in a parent element!")
+        }
+
         return out[0]
     }
 

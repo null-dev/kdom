@@ -1,8 +1,13 @@
 package xyz.nulldev.kdom
 
+import kotlinx.html.dom.create
 import org.w3c.dom.*
 import xyz.nulldev.kdom.api.*
 import xyz.nulldev.kdom.api.Element
+import xyz.nulldev.kdom.api.compat.KTableSpec
+import xyz.nulldev.kdom.api.compat.KTdSpec
+import xyz.nulldev.kdom.api.compat.KThSpec
+import xyz.nulldev.kdom.api.compat.KTrSpec
 import kotlin.browser.document
 import kotlin.dom.clear
 
@@ -65,7 +70,51 @@ class CompiledDom(val root: HTMLElement,
                 return Pair(split, curChunks)
             }
 
-            val root = html
+            fun moveAttributes(input: HTMLElement, output: org.w3c.dom.Element) {
+                //Copy attribute list as we remove attributes later
+                (0 until input.attributes.length).map {
+                    input.attributes[it]!!
+                }.forEach {
+                    output.setAttributeNode(input.removeAttributeNode(it))
+                }
+            }
+            fun moveChildren(input: HTMLElement, output: org.w3c.dom.Element) {
+                (0 until input.childNodes.length).map {
+                    input.childNodes[it]!!
+                }.forEach {
+                    output.appendChild(it)
+                }
+            }
+
+            //Special case compat elements
+            val root = when(html.tagName.toLowerCase()) {
+                KTrSpec.tag -> {
+                    document.createElement("tr").apply {
+                        moveAttributes(html, this)
+                        moveChildren(html, this)
+                    }
+                }
+                KTableSpec.tag -> {
+                    document.createElement("table").apply {
+                        moveAttributes(html, this)
+                        moveChildren(html, this)
+                    }
+                }
+                KTdSpec.tag -> {
+                    document.createElement("td").apply {
+                        moveAttributes(html, this)
+                        moveChildren(html, this)
+                    }
+                }
+                KThSpec.tag -> {
+                    document.createElement("th").apply {
+                        moveAttributes(html, this)
+                        moveChildren(html, this)
+                    }
+                }
+                else -> html
+            } as HTMLElement
+
             val mappings = mutableListOf<DomMapping>()
 
             fun traverseNode(element: HTMLElement) {
