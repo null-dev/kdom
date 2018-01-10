@@ -19,7 +19,7 @@ abstract class Component {
      * The root HTML element of this page
      */
     @JsName("domGenerator")
-    abstract fun dom(): HTMLElement
+    abstract protected fun dom(): HTMLElement
 
     /**
      * Executed when the component is compiled
